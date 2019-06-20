@@ -21,7 +21,6 @@ Orders.TimeBonus = {}
 Orders.TimeBonus[(60 * 60 * 30)] = {bonusModifier = 1.1, guiColor = {r = 0, g = 1, b = 0, a = 1}}
 Orders.TimeBonus[(60 * 60 * 60 * 2)] = {bonusModifier = 1, guiColor = {r = 255, g = 252, b = 0, a = 1}}
 Orders.TimeBonus[(60 * 60 * 60 * 4)] = {bonusModifier = 0.9, guiColor = {r = 255, g = 211, b = 0, a = 1}}
-Orders.TimeBonus[(60 * 60 * 60 * 5)] = {bonusModifier = 0.8, guiColor = {r = 1, g = 0, b = 0, a = 1}}
 Orders.TimeBonus[(60 * 60 * 60 * 6)] = {bonusModifier = 0.8, guiColor = {r = 1, g = 0, b = 0, a = 1}}
 
 function Orders.OnStartup()

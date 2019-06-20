@@ -6,6 +6,7 @@ local Investments = require("scripts/investments")
 local Orders = require("scripts/orders")
 local Financials = require("scripts/financials")
 local Gui = require("scripts/gui")
+local Market = require("scripts/market")
 
 local function SetTestData()
     global.profitMade = 0
@@ -28,6 +29,7 @@ local function OnStartup()
     Financials.OnStartup()
     Investments.OnStartup()
     Orders.OnStartup()
+    Market.OnStartup()
 
     Gui.OnStartup()
 
@@ -41,6 +43,7 @@ local function OnLoad()
     Financials.OnLoad()
     Investments.OnLoad()
     Orders.OnLoad()
+    Market.OnLoad()
 
     Gui.OnLoad()
 end

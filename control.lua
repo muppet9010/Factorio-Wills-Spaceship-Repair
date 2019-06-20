@@ -7,6 +7,20 @@ local Orders = require("scripts/orders")
 local Financials = require("scripts/financials")
 local Gui = require("scripts/gui")
 
+local function SetTestData()
+    global.profitMade = 0
+    global.profitTarget = 50000
+    global.bankruptcyLimit = 1500000
+    global.dividendsPaid = 150000
+    global.dividendsTotal = 500000
+    global.wagesPaid = 3000
+    global.wagesTotal = 6500
+
+    global.orderSlots[1] = {index = 1, state = Orders.SlotStates.waitingItem, item = "wills_spaceship_repair-hull_component", itemCountNeeded = 2, itemCountDone = 1, startTime = 0, nextDeadlineTime = (60 * 60 * 30)}
+    global.orderSlots[2] = {index = 2, state = Orders.SlotStates.waitingCustomerDepart, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = (60 * 15)}
+    global.orderSlots[3] = {index = 3, state = Orders.SlotStates.waitingDrydock, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = nil}
+end
+
 local function OnStartup()
     Utils.DisableIntroMessage()
     ExterminateBiters.OnStartup()
@@ -16,6 +30,8 @@ local function OnStartup()
     Orders.OnStartup()
 
     Gui.OnStartup()
+
+    SetTestData()
 end
 
 local function OnLoad()

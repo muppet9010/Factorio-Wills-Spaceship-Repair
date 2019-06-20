@@ -27,11 +27,6 @@ Orders.TimeBonus[(60 * 60 * 60 * 6)] = {bonusModifier = 0.8, guiColor = {r = 1, 
 function Orders.OnStartup()
     global.orderSlots = global.orderSlots or {}
 
-    --TODO test data for GUI work
-    global.orderSlots[1] = {index = 1, state = Orders.SlotStates.waitingItem, item = "wills_spaceship_repair-hull_component", itemCountNeeded = 2, itemCountDone = 1, startTime = 0, nextDeadlineTime = (60 * 60 * 30)}
-    global.orderSlots[2] = {index = 2, state = Orders.SlotStates.waitingCustomerDepart, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = (60 * 15)}
-    global.orderSlots[3] = {index = 3, state = Orders.SlotStates.waitingDrydock, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = nil}
-
     Orders.OnLoad()
 end
 
@@ -56,10 +51,10 @@ function Orders.GetOrderGuiTime(orderIndex)
     local order = global.orderSlots[orderIndex]
     local timeTexts = {"", nil}
     if order.state == Orders.SlotStates.waitingItem then
-        timeTexts[1] = Utils.LocalisedStringOfTime((order.nextDeadlineTime - game.tick), "hour", "second")
+        timeTexts[1] = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
         timeTexts[2] = Orders.GetOrderTimeBonus(order).guiColor
     elseif order.state == Orders.SlotStates.waitingCustomerDepart then
-        timeTexts[1] = Utils.LocalisedStringOfTime((order.nextDeadlineTime - game.tick), "minute", "second")
+        timeTexts[1] = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
     end
     return timeTexts
 end

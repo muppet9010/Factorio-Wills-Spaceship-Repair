@@ -1,7 +1,7 @@
 local Financials = {}
 
 function Financials.OnStartup()
-    global.bankBalance = global.bankBalance or 0
+    global.profitMade = global.profitMade or 0
     global.profitTarget = global.profitTarget or 0
     global.bankruptcyLimit = global.bankruptcyLimit or 0
     global.dividendsPaid = global.dividendsPaid or 0

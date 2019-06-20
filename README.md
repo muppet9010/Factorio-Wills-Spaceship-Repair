@@ -6,4 +6,4 @@ A spaceship repair business where you need to launch expensive spaceship parts t
 Supporting workforce has to be researched and then paid an hourly wage.
 
 
-Many graphics and recipes copied/inspired from Space Exploration Mod under its MIT licence.
+Many graphics and recipes copied/inspired from Space Extension Mod (SpaceX) under its MIT licence.

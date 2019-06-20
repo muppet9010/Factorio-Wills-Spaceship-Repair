@@ -46,13 +46,13 @@ function Gui.CreateGui(player)
     local guiFlow = GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, true)
 
     local statusFrame = GuiUtil.AddElement({parent = guiFlow, name = "status", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
-    GuiUtil.AddElement({parent = statusFrame, name = "bank_balance", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusFrame, name = "total_debt", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusFrame, name = "wages", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
+    GuiUtil.AddElement({parent = statusFrame, name = "dividends", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "bankruptcy_limit", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "dividends", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "wages", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusFrame, name = "profit", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "workforce_recruited", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "game_time", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "profit", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "view_investors", type = "button", caption = "self", style = "muppet_large_button"}, false)
 
     local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
@@ -77,27 +77,29 @@ end
 
 function Gui.CalculateStatusElementValues()
     local guiValues = {}
-    guiValues.bankBalance = global.bankBalance
-    guiValues.bankruptcyLimit = global.bankruptcyLimit
-    guiValues.dividendsPaid = global.dividendsPaid
-    guiValues.dividendsTotal = global.dividendsTotal
-    guiValues.wagesPaid = global.wagesPaid
-    guiValues.wagesTotal = global.wagesTotal
+    guiValues.totalDebt = Utils.DisplayNumber((global.wagesTotal - global.wagesPaid) + (global.dividendsTotal - global.dividendsPaid))
+    guiValues.bankruptcyLimit = Utils.DisplayNumber(global.bankruptcyLimit)
+    guiValues.dividendsPaid = Utils.DisplayNumber(global.dividendsPaid)
+    guiValues.dividendsTotal = Utils.DisplayNumber(global.dividendsTotal)
+    guiValues.wagesPaid = Utils.DisplayNumber(global.wagesPaid)
+    guiValues.wagesTotal = Utils.DisplayNumber(global.wagesTotal)
     guiValues.currentWorkforce = #game.connected_players - 1
     guiValues.maxWorkforce = global.recruitedWorkforceCount
-    guiValues.gameTime = Utils.LocalisedStringOfTime(game.tick, "hour", "second")
-    guiValues.profitTarget = global.profitTarget
+    guiValues.gameTime = Utils.DisplayTimeOfTicks(game.tick, "hour", "second")
+    guiValues.profitMade = Utils.DisplayNumber(global.profitMade)
+    guiValues.profitTarget = Utils.DisplayNumber(global.profitTarget)
     return guiValues
 end
 
 function Gui.UpdateStatusElements(player, guiValues)
     local playerIndex = player.index
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "bank_balance", "label", {caption = {"self", guiValues.bankBalance, guiValues.profitTarget}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "total_debt", "label", {caption = {"self", guiValues.totalDebt}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "bankruptcy_limit", "label", {caption = {"self", guiValues.bankruptcyLimit}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "dividends", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "wages", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "workforce_recruited", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "game_time", "label", {caption = {"self", guiValues.gameTime}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "profit", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
 end
 
 function Gui.UpdateOrderSlotElements(player, orderSlotValues)

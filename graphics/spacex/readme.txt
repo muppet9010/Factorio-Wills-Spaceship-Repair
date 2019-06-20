@@ -1,2 +1,2 @@
-all graphics in this folder are from the Space Extension Mod ditributed under the MIT licence.
+all graphics in this folder are from the Space Extension Mod (SpaceX) ditributed under the MIT licence.
 As no personalised MIT licence is incldued within Space Extension Mod a default one is included for completeness.

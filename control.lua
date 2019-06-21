@@ -6,6 +6,7 @@ local Orders = require("scripts/orders")
 local Financials = require("scripts/financials")
 local Gui = require("scripts/gui")
 local Market = require("scripts/market")
+local Map = require("script/map")
 
 local function SetTestData()
     global.profitMade = 0
@@ -28,6 +29,7 @@ local function OnStartup()
     Investments.OnStartup()
     Orders.OnStartup()
     Market.OnStartup()
+    Map.OnStartup()
 
     Gui.OnStartup()
 
@@ -41,6 +43,7 @@ local function OnLoad()
     Investments.OnLoad()
     Orders.OnLoad()
     Market.OnLoad()
+    Map.OnLoad()
 
     Gui.OnLoad()
 end
@@ -58,3 +61,4 @@ Events.RegisterEvent(defines.events.on_runtime_mod_setting_changed)
 Events.RegisterEvent(defines.events.on_rocket_launched)
 Events.RegisterEvent(defines.events.on_research_finished)
 Events.RegisterEvent(defines.events.on_player_joined_game)
+Events.RegisterEvent(defines.events.on_chunk_generated)

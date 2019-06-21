@@ -5,7 +5,7 @@ Market.OnStartup = function()
     if global.marketEntity == nil then
         global.marketEntity = Market.CreateMarketEntity(game.surfaces[1], {0, 0}, 20)
         if global.marketEntity == nil then
-            Logging.LogPrint("ERROR: Failed to create market")
+            Logging.LogPrint("ERROR: Failed to create market near spawn")
         end
         Market.PopulateMarketItems(global.marketEntity)
     end
@@ -20,11 +20,11 @@ Market.CreateMarketEntity = function(surface, centerPos, radius)
         pos = surface.find_non_colliding_position("market", centerPos, radius, 1, true)
         radius = radius * 2
     end
-    local market = surface.create_entity {name = "market", position = pos, force = "player"}
-    if market ~= nil then
-        market.destructible = false
+    local entity = surface.create_entity {name = "market", position = pos, force = "player"}
+    if entity ~= nil then
+        entity.destructible = false
     end
-    return market
+    return entity
 end
 
 Market.PopulateMarketItems = function(market)

@@ -573,4 +573,32 @@ function Utils.IsPositionInBoundingBox(position, boundingBox, safeTiling)
     end
 end
 
+function Utils.CreateLandPlacementTestEntityPrototype(entityToClone, newEntityName)
+    local clonedIcon = entityToClone.icon
+    local clonedIconSize = entityToClone.icon_size
+    if clonedIcon == nil then
+        clonedIcon = entityToClone.icons[1].icon
+        clonedIconSize = entityToClone.icons[1].icon_size
+    end
+    return {
+        type = "simple-entity",
+        name = newEntityName,
+        order = "zzz",
+        icons = {
+            {
+                icon = clonedIcon,
+                icon_size = clonedIconSize
+            },
+            {
+                icon = "__core__/graphics/cancel.png",
+                icon_size = 64,
+                scale = (clonedIconSize / 64) * 0.75
+            }
+        },
+        collision_box = entityToClone.collision_box,
+        collision_mask = {"resource-layer"},
+        picture = data.raw["container"]["wooden-chest"].picture
+    }
+end
+
 return Utils

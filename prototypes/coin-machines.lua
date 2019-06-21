@@ -4,8 +4,12 @@ local Utils = require("utility/utils")
 local genericCoinMachine = {
     type = "assembling-machine",
     name = "generic_coin_machine",
-    icon = "__base__/graphics/icons/assembling-machine-0.png",
-    icon_size = 32,
+    icons = {
+        {
+            icon = "__base__/graphics/icons/assembling-machine-0.png",
+            icon_size = 32
+        }
+    },
     order = "zzz",
     flags = {"placeable-player"},
     max_health = 400,
@@ -97,11 +101,15 @@ local genericCoinMachine = {
 
 local function MakeSpecificCoinMachine(coinChestType)
     local coinMachine = Utils.DeepCopy(genericCoinMachine)
+    local coinChestTypeItemPrototype = data.raw["item"][Constants.ModName .. "-" .. coinChestType]
     coinMachine.name = Constants.ModName .. "-" .. coinChestType .. "_assembling_machine"
     coinMachine.fixed_recipe = Constants.ModName .. "-" .. coinChestType
+    table.insert(coinMachine.icons, {icon = coinChestTypeItemPrototype.icon, icon_size = coinChestTypeItemPrototype.icon_size, scale = (coinMachine.icons[1].icon_size / coinChestTypeItemPrototype.icon_size) / 2})
     data:extend({coinMachine})
 end
 
 MakeSpecificCoinMachine("wooden_coin_chest")
 MakeSpecificCoinMachine("iron_coin_chest")
 MakeSpecificCoinMachine("steel_coin_chest")
+
+data:extend({Utils.CreateLandPlacementTestEntityPrototype(genericCoinMachine, "wills_spaceship_repair-coin_machine_place_test")})

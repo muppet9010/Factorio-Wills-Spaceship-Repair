@@ -1,6 +1,5 @@
 local Events = require("utility/events")
 local Utils = require("utility/utils")
-local ExterminateBiters = require("scripts/exterminate-biters")
 local RecruitWorkforce = require("scripts/recruit-workforce")
 local Investments = require("scripts/investments")
 local Orders = require("scripts/orders")
@@ -24,7 +23,6 @@ end
 
 local function OnStartup()
     Utils.DisableIntroMessage()
-    ExterminateBiters.OnStartup()
     RecruitWorkforce.OnStartup()
     Financials.OnStartup()
     Investments.OnStartup()
@@ -38,7 +36,6 @@ end
 
 local function OnLoad()
     Utils.DisableSiloScript()
-    ExterminateBiters.OnLoad()
     RecruitWorkforce.OnLoad()
     Financials.OnLoad()
     Investments.OnLoad()

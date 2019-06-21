@@ -1,7 +1,6 @@
 require("prototypes/categories")
 require("prototypes/ship-parts")
 require("prototypes/dry-dock")
-require("prototypes/exterminate-biters")
 require("prototypes/recruit-workforce")
 require("utility/style-data")
 require("prototypes/market")

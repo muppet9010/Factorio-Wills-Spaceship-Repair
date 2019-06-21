@@ -1,10 +1,12 @@
+local Constants = require("constants")
+
 data:extend(
     {
         {
             type = "technology",
             name = "wills_spaceship_repair-exterminate_biters",
             icon_size = 128,
-            icon = "__base__/graphics/technology/demo/analyse-ship.png",
+            icon = Constants.AssetModName .. "/graphics/technology/exterminate_biters.png",
             effects = {
                 {
                     type = "unlock-recipe",
@@ -30,8 +32,8 @@ data:extend(
         {
             type = "item",
             name = "wills_spaceship_repair-exterminate_biters",
-            icon = "__base__/graphics/technology/demo/analyse-ship.png",
-            icon_size = 128,
+            icon = Constants.AssetModName .. "/graphics/icons/exterminate_biters.png",
+            icon_size = 32,
             subgroup = "ammo",
             order = "e[flamethrower]a",
             stack_size = 1

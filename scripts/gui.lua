@@ -53,7 +53,6 @@ function Gui.CreateGui(player)
     GuiUtil.AddElement({parent = statusFrame, name = "profit", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "workforce_recruited", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "game_time", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "view_investors", type = "button", caption = "self", style = "muppet_large_button"}, false)
 
     local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
     GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = true}, true)

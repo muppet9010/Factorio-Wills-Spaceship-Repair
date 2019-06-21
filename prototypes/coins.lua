@@ -37,6 +37,7 @@ data:extend(
             hidden = true,
             category = "coins",
             hide_from_stats = true,
+            allow_decomposition = false,
             ingredients = {
                 {"wooden-chest", 10},
                 {"coin", 1000}
@@ -62,6 +63,7 @@ data:extend(
             hidden = true,
             category = "coins",
             hide_from_stats = true,
+            allow_decomposition = false,
             ingredients = {
                 {"iron-chest", 10},
                 {"wills_spaceship_repair-wooden_coin_chest", 25}
@@ -87,6 +89,7 @@ data:extend(
             hidden = true,
             category = "coins",
             hide_from_stats = true,
+            allow_decomposition = false,
             ingredients = {
                 {"steel-chest", 10},
                 {"wills_spaceship_repair-iron_coin_chest", 10}
@@ -126,6 +129,7 @@ data:extend(
             energy_required = 10,
             enabled = false,
             category = "crafting",
+            hide_from_stats = true,
             ingredients = {
                 {"wills_spaceship_repair-empty_coin_delivery_capsule", 1},
                 {"wills_spaceship_repair-wooden_coin_chest", 1}
@@ -148,6 +152,7 @@ data:extend(
             energy_required = 10,
             enabled = false,
             category = "crafting",
+            hide_from_stats = true,
             ingredients = {
                 {"wills_spaceship_repair-empty_coin_delivery_capsule", 1},
                 {"wills_spaceship_repair-iron_coin_chest", 1}
@@ -170,6 +175,7 @@ data:extend(
             energy_required = 10,
             enabled = false,
             category = "crafting",
+            hide_from_stats = true,
             ingredients = {
                 {"wills_spaceship_repair-empty_coin_delivery_capsule", 1},
                 {"wills_spaceship_repair-steel_coin_chest", 1}

@@ -2,15 +2,10 @@ local Utils = require("utility/utils")
 local Logging = require("utility/logging")
 
 local Events = {}
-if MOD == nil then
-    MOD = {}
-end
-if MOD.events == nil then
-    MOD.events = {}
-end
-if MOD.customEventNameToId == nil then
-    MOD.customEventNameToId = {}
-end
+MOD = MOD or {}
+MOD.events = MOD.events or {}
+MOD.customEventNameToId = MOD.customEventNameToId or {}
+MOD.scheduledEventNames = MOD.scheduledEventNames or {}
 
 function Events.RegisterEvent(eventName)
     local eventId
@@ -67,35 +62,47 @@ function Events.RaiseEvent(eventData)
 end
 
 function Events.RegisterScheduler()
-    Events.RegisterEvent("UTILITYSCHEDULER")
     script.on_event(defines.events.on_tick, Events.OnSchedulerCycle)
 end
 
 function Events.OnSchedulerCycle(event)
-    local currectTick = event.tick
-    if global.UTILITYSCHEDULER == nil then
+    local tick = event.tick
+    if global.UTILITYSCHEDULEDFUNCTIONS == nil then
         return
     end
-    global.UTILITYSCHEDULERLASTTICK = global.UTILITYSCHEDULERLASTTICK or 0
-    for tick = global.UTILITYSCHEDULERLASTTICK, currectTick do
-        if global.UTILITYSCHEDULER[tick] ~= nil then
-            for _, scheduledFunction in pairs(global.UTILITYSCHEDULER[tick]) do
-                scheduledFunction(event)
+    if global.UTILITYSCHEDULEDFUNCTIONS[tick] ~= nil then
+        for eventName, instance in pairs(global.UTILITYSCHEDULEDFUNCTIONS[tick]) do
+            for instanceId, scheduledFunctionData in pairs(instance) do
+                local data = Utils.TableMerge({event, scheduledFunctionData})
+                if MOD.scheduledEventNames[eventName] ~= nil then
+                    MOD.scheduledEventNames[eventName](data)
+                else
+                    Logging.LogPrint("WARNING: schedule event called that doesn't exist: ''" .. eventName .. "'' id: ''" .. instanceId .. "'' at tick: " .. tick)
+                end
             end
         end
-        global.UTILITYSCHEDULER[tick] = nil
+        global.UTILITYSCHEDULEDFUNCTIONS[tick] = nil
     end
-    global.UTILITYSCHEDULERLASTTICK = currectTick
 end
 
---IF THE FUNCTION THAT IS REGISTERED IS REMOVED IN A FUTURE VERSION IT WILL CAUSE AN ERROR.
-function Events.AddScheduledEvent(eventTick, eventName, eventFunction)
-    global.UTILITYSCHEDULER = global.UTILITYSCHEDULER or {}
-    global.UTILITYSCHEDULER[eventTick] = global.UTILITYSCHEDULER[eventTick] or {}
-    if global.UTILITYSCHEDULER[eventTick][eventName] ~= nil then
-        Logging.LogPrint("WARNING: Overridden schedule event: " .. eventName .. " at tick " .. eventTick)
+function Events.RegisterScheduledEventType(eventName, eventFunction)
+    MOD.scheduledEventNames[eventName] = eventFunction
+end
+
+function Events.ScheduleEvent(eventTick, eventName, instanceId, eventData)
+    local nowTick = game.tick
+    if eventTick == nil or eventTick <= nowTick then
+        eventTick = nowTick + 1
     end
-    global.UTILITYSCHEDULER[eventTick][eventName] = eventFunction
+    instanceId = tostring(instanceId)
+    eventData = eventData or {}
+    global.UTILITYSCHEDULEDFUNCTIONS = global.UTILITYSCHEDULEDFUNCTIONS or {}
+    global.UTILITYSCHEDULEDFUNCTIONS[eventTick] = global.UTILITYSCHEDULEDFUNCTIONS[eventTick] or {}
+    global.UTILITYSCHEDULEDFUNCTIONS[eventTick][eventName] = global.UTILITYSCHEDULEDFUNCTIONS[eventTick][eventName] or {}
+    if global.UTILITYSCHEDULEDFUNCTIONS[eventTick][eventName][instanceId] ~= nil then
+        Logging.LogPrint("WARNING: Overridden schedule event: '" .. eventName .. "' id: ''" .. instanceId .. "'' at tick: " .. eventTick)
+    end
+    global.UTILITYSCHEDULEDFUNCTIONS[eventTick][eventName][instanceId] = eventData
 end
 
 function Events.RemoveScheduledEvent()

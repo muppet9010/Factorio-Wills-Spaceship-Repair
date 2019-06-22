@@ -6,19 +6,20 @@ local Orders = require("scripts/orders")
 --local Logging = require("utility/logging")
 
 function Gui.OnStartup()
-    Events.AddScheduledEvent(60, "Gui.OnSecondUpdate", Gui.OnSecondUpdate)
     GuiUtil.CreateAllPlayersElementReferenceStorage()
     Gui.GuiRecreateAll()
+    Events.ScheduleEvent(60, "Gui.OnSecondUpdate")
 
     Gui.OnLoad()
 end
 
 function Gui.OnLoad()
     Events.RegisterHandler(defines.events.on_player_joined_game, "Gui", Gui.OnPlayerJoinedGame)
+    Events.RegisterScheduledEventType("Gui.OnSecondUpdate", Gui.OnSecondUpdate)
 end
 
 function Gui.OnSecondUpdate(event)
-    Events.AddScheduledEvent(event.tick + 60, "Gui.OnSecondUpdate", Gui.OnSecondUpdate)
+    Events.ScheduleEvent(event.tick + 60, "Gui.OnSecondUpdate")
     Gui.RefreshAll()
 end
 
@@ -58,6 +59,8 @@ function Gui.CreateGui(player)
 
     local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
     GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = true}, true)
+
+    Gui.RefreshPlayer(player)
 end
 
 function Gui.RefreshPlayer(player)

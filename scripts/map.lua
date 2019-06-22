@@ -28,6 +28,7 @@ function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_chunk_generated, "Map", Map.OnChunkGenerated)
     Events.RegisterHandler(defines.events.on_entity_died, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     Events.RegisterHandler(defines.events.script_raised_destroy, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
+    Events.RegisterScheduledEventType("Map.ScheduledMakeSiloAtPosition", Map.ScheduledMakeSiloAtPosition)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -152,7 +153,7 @@ end
 function Map.MakeSiloAtPosition(region, position)
     local siloPrototype = game.entity_prototypes["wills_spaceship_repair-rocket_silo_place_test"]
     local siloFootprint = Utils.ApplyBoundingBoxToPosition(position, siloPrototype.collision_box)
-    Utils.DestroyAllObjectsInArea(global.surface, siloFootprint)
+    Utils.KillAllObjectsInArea(global.surface, siloFootprint)
 
     local entity = global.surface.create_entity {name = "rsc-silo-stage1", position = position, force = "player"}
     if entity == nil then
@@ -161,6 +162,10 @@ function Map.MakeSiloAtPosition(region, position)
     end
     Logging.LogPrint("region silo created: " .. region.index, debugLogging)
     region.siloPosition = position
+end
+
+function Map.ScheduledMakeSiloAtPosition(event)
+    Map.MakeSiloAtPosition(event.region, event.position)
 end
 
 function Map.OnMaybeRocketSiloDiedDestroyed(event)
@@ -173,7 +178,7 @@ function Map.OnMaybeRocketSiloDiedDestroyed(event)
     local region = Map.GetRegionForChunkPos(Utils.GetChunkPositionForTilePosition(pos))
     if region ~= nil then
         Logging.LogPrint("Rocket silo scheduled for recreation", debugLogging)
-        Events.AddScheduledEvent(event.tick, "MakeSiloAtPosition-" .. region.index, Map.MakeSiloAtPosition(region, region.siloPosition))
+        Events.ScheduleEvent(nil, "Map.ScheduledMakeSiloAtPosition", region.index, {region = region, position = region.siloPosition})
     end
 end
 

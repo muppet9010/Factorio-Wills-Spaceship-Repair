@@ -1,12 +1,19 @@
 local Utils = {}
 --local Logging = require("utility/logging")
+local factorioUtil = require("__core__/lualib/util")
+Utils.DeepCopy = factorioUtil.table.deepcopy
+Utils.TableMerge = factorioUtil.merge
 
 function Utils.KillAllKillableObjectsInArea(surface, positionedBoundingBox, killerEntity, collisionBoxOnlyEntities)
     local entitiesFound = surface.find_entities(positionedBoundingBox)
     for k, entity in pairs(entitiesFound) do
         if entity.valid then
             if entity.health ~= nil and entity.destructible and ((collisionBoxOnlyEntities and Utils.IsCollisionBoxPopulated(entity.prototype.collision_box)) or (not collisionBoxOnlyEntities)) then
-                entity.die("neutral", killerEntity)
+                if killerEntity ~= nil then
+                    entity.die("neutral", killerEntity)
+                else
+                    entity.die("neutral")
+                end
             end
         end
     end
@@ -16,7 +23,11 @@ function Utils.KillAllObjectsInArea(surface, positionedBoundingBox, killerEntity
     local entitiesFound = surface.find_entities(positionedBoundingBox)
     for k, entity in pairs(entitiesFound) do
         if entity.valid then
-            entity.die("neutral", killerEntity)
+            if killerEntity ~= nil then
+                entity.die("neutral", killerEntity)
+            else
+                entity.die("neutral")
+            end
         end
     end
 end
@@ -461,28 +472,6 @@ function Utils._CalculateSpecificBiterSelectionProbabilities(spawnerType, curren
     end
 
     return normalisedcurrentEvolutionProbabilities
-end
-
---copied from Factorio core Util 0.17.21
-function Utils.DeepCopy(outerObject)
-    local lookup_table = {}
-    local function _copy(object)
-        if type(object) ~= "table" then
-            -- don't copy factorio rich objects
-            return object
-        elseif object.__self then
-            return object
-        elseif lookup_table[object] then
-            return lookup_table[object]
-        end
-        local new_table = {}
-        lookup_table[object] = new_table
-        for index, value in pairs(object) do
-            new_table[_copy(index)] = _copy(value)
-        end
-        return setmetatable(new_table, getmetatable(object))
-    end
-    return _copy(outerObject)
 end
 
 function Utils.DisableSiloScript()

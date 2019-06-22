@@ -1,13 +1,42 @@
 local Utils = {}
 --local Logging = require("utility/logging")
 
-function Utils.KillAllObjectsInArea(surface, positionedBoundingBox, killerEntity, collisionBoxOnlyEntities)
+function Utils.KillAllKillableObjectsInArea(surface, positionedBoundingBox, killerEntity, collisionBoxOnlyEntities)
     local entitiesFound = surface.find_entities(positionedBoundingBox)
     for k, entity in pairs(entitiesFound) do
         if entity.valid then
             if entity.health ~= nil and entity.destructible and ((collisionBoxOnlyEntities and Utils.IsCollisionBoxPopulated(entity.prototype.collision_box)) or (not collisionBoxOnlyEntities)) then
                 entity.die("neutral", killerEntity)
             end
+        end
+    end
+end
+
+function Utils.KillAllObjectsInArea(surface, positionedBoundingBox, killerEntity)
+    local entitiesFound = surface.find_entities(positionedBoundingBox)
+    for k, entity in pairs(entitiesFound) do
+        if entity.valid then
+            entity.die("neutral", killerEntity)
+        end
+    end
+end
+
+function Utils.DestroyAllKillableObjectsInArea(surface, positionedBoundingBox, collisionBoxOnlyEntities)
+    local entitiesFound = surface.find_entities(positionedBoundingBox)
+    for k, entity in pairs(entitiesFound) do
+        if entity.valid then
+            if entity.health ~= nil and entity.destructible and ((collisionBoxOnlyEntities and Utils.IsCollisionBoxPopulated(entity.prototype.collision_box)) or (not collisionBoxOnlyEntities)) then
+                entity.destroy({dp_cliff_correction = true, raise_destroy = false})
+            end
+        end
+    end
+end
+
+function Utils.DestroyAllObjectsInArea(surface, positionedBoundingBox)
+    local entitiesFound = surface.find_entities(positionedBoundingBox)
+    for k, entity in pairs(entitiesFound) do
+        if entity.valid then
+            entity.destroy({dp_cliff_correction = true, raise_destroy = false})
         end
     end
 end
@@ -41,6 +70,14 @@ function Utils.ApplyBoundingBoxToPosition(centrePos, boundingBox, orientation)
     else
         game.print("Error: Diagonal orientations not supported by Utils.ApplyBoundingBoxToPosition()")
     end
+end
+
+function Utils.GetChunkPositionForTilePosition(pos)
+    return {x = math.floor(pos.x / 32), y = math.floor(pos.y / 32)}
+end
+
+function Utils.GetLeftTopTilePositionForChunkPosition(chunkPos)
+    return {x = chunkPos.x * 32, y = chunkPos.y * 32}
 end
 
 function Utils.RotatePositionAround0(orientation, position)
@@ -223,6 +260,29 @@ function Utils.CalculateTilesUnderPositionedBoundingBox(positionedBoundingBox)
         end
     end
     return tiles
+end
+
+function Utils.GetDistance(pos1, pos2)
+    local dx = pos1.x - pos2.x
+    local dy = pos1.y - pos2.y
+    return math.sqrt(dx * dx + dy * dy)
+end
+
+function Utils.IsPositionInBoundingBox(position, boundingBox, safeTiling)
+    --safeTiling means that the boundingbox can be tiled without risk of an entity on the border being in 2 result sets, i.e. for use on each chunk.
+    if safeTiling == nil or not safeTiling then
+        if position.x >= boundingBox.left_top.x and position.x <= boundingBox.right_bottom.x and position.y >= boundingBox.left_top.y and position.y <= boundingBox.right_bottom.y then
+            return true
+        else
+            return false
+        end
+    else
+        if position.x > boundingBox.left_top.x and position.x <= boundingBox.right_bottom.x and position.y > boundingBox.left_top.y and position.y <= boundingBox.right_bottom.y then
+            return true
+        else
+            return false
+        end
+    end
 end
 
 function Utils.GetEntityReturnedToInventoryName(entity)
@@ -550,29 +610,6 @@ function Utils.DisplayTimeOfTicks(inputTicks, displayLargestTimeUnit, displaySma
     end
 end
 
-function Utils.GetDistance(pos1, pos2)
-    local dx = pos1.x - pos2.x
-    local dy = pos1.y - pos2.y
-    return math.sqrt(dx * dx + dy * dy)
-end
-
-function Utils.IsPositionInBoundingBox(position, boundingBox, safeTiling)
-    --safeTiling means that the boundingbox can be tiled without risk of an entity on the border being in 2 result sets, i.e. for use on each chunk.
-    if safeTiling == nil or not safeTiling then
-        if position.x >= boundingBox.left_top.x and position.x <= boundingBox.right_bottom.x and position.y >= boundingBox.left_top.y and position.y <= boundingBox.right_bottom.y then
-            return true
-        else
-            return false
-        end
-    else
-        if position.x > boundingBox.left_top.x and position.x <= boundingBox.right_bottom.x and position.y > boundingBox.left_top.y and position.y <= boundingBox.right_bottom.y then
-            return true
-        else
-            return false
-        end
-    end
-end
-
 function Utils.CreateLandPlacementTestEntityPrototype(entityToClone, newEntityName)
     local clonedIcon = entityToClone.icon
     local clonedIconSize = entityToClone.icon_size
@@ -596,9 +633,25 @@ function Utils.CreateLandPlacementTestEntityPrototype(entityToClone, newEntityNa
             }
         },
         collision_box = entityToClone.collision_box,
-        collision_mask = {"resource-layer"},
+        collision_mask = {"water-tile", "colliding-with-tiles-only"},
         picture = data.raw["container"]["wooden-chest"].picture
     }
+end
+
+function Utils.GetValidPositionForEntityNearPosition(entityName, surface, centerPos, radius, maxAttempts)
+    local pos
+    local attempts = 1
+    while pos == nil do
+        local searchRadius = radius * attempts
+        pos = surface.find_non_colliding_position(entityName, centerPos, searchRadius, 1, true)
+        if pos ~= nil then
+            return pos
+        end
+        attempts = attempts + 1
+        if attempts > maxAttempts then
+            return nil
+        end
+    end
 end
 
 return Utils

@@ -34,28 +34,28 @@ end
 
 function Orders.GetOrderGuiState(orderIndex)
     local order = global.orderSlots[orderIndex]
-    local statusTexts = {"", ""}
+    local statusText, statusCountText = "", ""
     if order.state == Orders.SlotStates.waitingCapacityTech or order.state == Orders.SlotStates.waitingDrydock or order.state == Orders.SlotStates.waitingOrderDecryption or order.state == Orders.SlotStates.waitingCustomerDepart then
-        statusTexts[1] = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.state}
+        statusText = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.state}
     elseif order.state == Orders.SlotStates.waitingItem then
-        statusTexts[1] = {"item-name." .. order.item}
+        statusText = {"item-name." .. order.item}
         if order.itemCountNeeded > 1 then
-            statusTexts[2] = " " .. order.itemCountDone .. " / " .. order.itemCountNeeded
+            statusCountText = " " .. order.itemCountDone .. " / " .. order.itemCountNeeded
         end
     end
-    return statusTexts
+    return statusText, statusCountText
 end
 
 function Orders.GetOrderGuiTime(orderIndex)
     local order = global.orderSlots[orderIndex]
-    local timeTexts = {"", nil}
+    local timeText, timeColor = "", nil
     if order.state == Orders.SlotStates.waitingItem then
-        timeTexts[1] = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
-        timeTexts[2] = Orders.GetOrderTimeBonus(order).guiColor
+        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
+        timeColor = Orders.GetOrderTimeBonus(order).guiColor
     elseif order.state == Orders.SlotStates.waitingCustomerDepart then
-        timeTexts[1] = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
+        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
     end
-    return timeTexts
+    return timeText, timeColor
 end
 
 function Orders.GetOrderTimeBonus(order)

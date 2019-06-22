@@ -6,7 +6,7 @@ local Orders = require("scripts/orders")
 local Financials = require("scripts/financials")
 local Gui = require("scripts/gui")
 local Market = require("scripts/market")
-local Map = require("script/map")
+local Map = require("scripts/map")
 
 local function SetTestData()
     global.profitMade = 0
@@ -23,6 +23,7 @@ local function SetTestData()
 end
 
 local function OnStartup()
+    global.surface = game.surfaces[1]
     Utils.DisableIntroMessage()
     RecruitWorkforce.OnStartup()
     Financials.OnStartup()

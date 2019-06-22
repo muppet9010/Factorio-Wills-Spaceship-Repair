@@ -1,72 +1,161 @@
 local Map = {}
 local Events = require("utility/events")
 local Utils = require("utility/utils")
+local Logging = require("utility/logging")
 
-local regionSize = 2496
-local regionEdgeMargin = 512
-local regionChunkSide = 2496 / 32
+local REGIONSIZE = 2496
+local REGIONEDGEMARGINTILES = 512
+local REGIONEDGELENGTHCHUNKS = REGIONSIZE / 32
+local PLACEMENTRADIUS = 20
 
-Map.OnStartup = function()
+local debugLogging = false
+--TODO: remove chunks generated if they aren't needed after both silo and coins placed. to avoid low evo biters remaining.
+function Map.OnStartup()
     global.Map = global.map or {}
     global.Map.regions = global.Map.regions or {}
 
     if global.Map.spawnCoinMachine3Entity == nil then
-        global.Map.spawnCoinMachine3Entity = Map.CreateSpawnCoin3MachineEntity(game.surfaces[1], {0, 0}, 20)
+        global.Map.spawnCoinMachine3Entity = Map.CreateSpawnCoin3MachineEntity()
         if global.Map.spawnCoinMachine3Entity == nil then
-            Logging.LogPrint("ERROR: Failed to create coin machine 3 near spawn")
+            return
         end
     end
 
     Map.OnLoad()
 end
 
-Map.OnLoad = function()
+function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_chunk_generated, "Map", Map.OnChunkGenerated)
 end
 
-Map.CreateSpawnCoin3MachineEntity = function(surface, centerPos, radius)
-    local pos
-    while pos == nil do
-        pos = surface.find_non_colliding_position("wills_spaceship_repair-steel_coin_chest_assembling_machine", centerPos, radius, 1, true)
-        radius = radius * 2
+function Map.CreateSpawnCoin3MachineEntity()
+    local pos = Utils.GetValidPositionForEntityNearPosition("wills_spaceship_repair-steel_coin_chest_assembling_machine", global.surface, {0, 0}, 20, 5)
+    if pos == nil then
+        Logging.Log("ERROR: No valid coin machine at spawn position found")
+        return nil
     end
-    local entity = surface.create_entity {name = "wills_spaceship_repair-steel_coin_chest_assembling_machine", position = pos, force = "player"}
-    if entity ~= nil then
-        entity.destructible = false
+    local entity = global.surface.create_entity {name = "wills_spaceship_repair-steel_coin_chest_assembling_machine", position = pos, force = "player"}
+    if entity == nil then
+        Logging.Log("ERROR: Coin machine at spawn failed to create at valid position")
+        return nil
     end
+    entity.destructible = false
     return entity
 end
 
-Map.OnChunkGenerated = function(event)
+function Map.OnChunkGenerated(event)
     local area = event.area
-    local chunkPos = {x = math.floor(area.left_top.x / 32), y = math.floor(area.left_top.y / 32)}
+    local chunkPos = Utils.GetChunkPositionForTilePosition(area.left_top)
+    Logging.Log("OnChunkGenerated: " .. Logging.PositionToString(chunkPos), debugLogging)
     local region = Map.GetRegionForChunkPos(chunkPos)
     if region == nil then
         region = Map.GenerateRegionForChunk(chunkPos)
     end
+    Map.CheckTestSilosPosition(region, chunkPos)
 end
 
-Map.GetRegionForChunkPos = function(chunkPos)
-    local regionPos = {x = math.floor(chunkPos.x / regionChunkSide), y = math.floor(chunkPos.y / regionChunkSide)}
+function Map.GetRegionForChunkPos(chunkPos)
+    local regionPos = {x = math.floor(chunkPos.x / REGIONEDGELENGTHCHUNKS), y = math.floor(chunkPos.y / REGIONEDGELENGTHCHUNKS)}
     local regionPosString = Utils.FormatPositionTableToString(regionPos)
     return global.Map.regions[regionPosString]
 end
 
-Map.GenerateRegionForChunk = function(chunkPos)
-    local regionPos = {x = math.floor(chunkPos.x / regionChunkSide), y = math.floor(chunkPos.y / regionChunkSide)}
+function Map.GenerateRegionForChunk(chunkPos)
+    local regionPos = {x = math.floor(chunkPos.x / REGIONEDGELENGTHCHUNKS), y = math.floor(chunkPos.y / REGIONEDGELENGTHCHUNKS)}
     local regionPosString = Utils.FormatPositionTableToString(regionPos)
-    local siloPosition = Map.FindSuitableLandForEntityInBoundingBox("") WRONG WRONG WRONG
+    local regionTopLeftChunk = {x = regionPos.x * REGIONEDGELENGTHCHUNKS, y = regionPos.y * REGIONEDGELENGTHCHUNKS}
+    local regionTopLeftPos = Utils.GetLeftTopTilePositionForChunkPosition(regionTopLeftChunk)
+    local regionInnerArea = {
+        left_top = {
+            x = regionTopLeftPos.x + REGIONEDGEMARGINTILES,
+            y = regionTopLeftPos.y + REGIONEDGEMARGINTILES
+        },
+        right_bottom = {
+            x = regionTopLeftPos.x + REGIONSIZE - REGIONEDGEMARGINTILES,
+            y = regionTopLeftPos.y + REGIONSIZE - REGIONEDGEMARGINTILES
+        }
+    }
     local region = {
         index = regionPosString,
         regionPos = regionPos,
-        siloPosition = siloPosition
+        regionInnerArea = regionInnerArea,
+        TestSilo = {attempts = 0},
+        siloPosition = nil
     }
     global.Map.regions[regionPosString] = region
+    Logging.LogPrint("GenerateRegion: " .. regionPosString, debugLogging)
+    Map.GenerateTestSiloPosition(region)
     return region
 end
 
-Map.FindSuitableLandForEntityInBoundingBox(entity)
-    return {x=0, y=0}
+function Map.GenerateTestSiloPosition(region)
+    region.TestSilo.attempts = region.TestSilo.attempts + 1
+    Logging.LogPrint("GenerateTestSiloPosition: " .. region.index .. "  -  attempt: " .. region.TestSilo.attempts, debugLogging)
+    if region.TestSilo.attempts >= 100 then
+        Logging.LogPrint("ERROR: Failed to find rocket silo position after 100 attempts in region: " .. region.index)
+        return
+    end
+    local testSiloEntity = game.entity_prototypes["wills_spaceship_repair-rocket_silo_place_test"]
+    local testSiloPos = {
+        x = math.random(region.regionInnerArea.left_top.x, region.regionInnerArea.right_bottom.x),
+        y = math.random(region.regionInnerArea.left_top.y, region.regionInnerArea.right_bottom.y)
+    }
+    region.TestSilo.pos = testSiloPos
+    local testSiloFootprint = Utils.ApplyBoundingBoxToPosition(testSiloPos, testSiloEntity.collision_box)
+    local testSiloPlacementArea = {
+        left_top = Utils.ApplyOffsetToPosition(testSiloFootprint.left_top, {x = -PLACEMENTRADIUS, y = -PLACEMENTRADIUS}),
+        right_bottom = Utils.ApplyOffsetToPosition(testSiloFootprint.right_bottom, {x = PLACEMENTRADIUS, y = PLACEMENTRADIUS})
+    }
+    local chunkArea = {
+        left_top = Utils.GetChunkPositionForTilePosition(testSiloPlacementArea.left_top),
+        right_bottom = Utils.GetChunkPositionForTilePosition(testSiloPlacementArea.right_bottom)
+    }
+    local chunksToCheck = Utils.CalculateTilesUnderPositionedBoundingBox(chunkArea)
+    local chunksNeeded = {}
+    for _, chunk in pairs(chunksToCheck) do
+        if not global.surface.is_chunk_generated(chunk) then
+            global.surface.request_to_generate_chunks(Utils.GetLeftTopTilePositionForChunkPosition(chunk), 0)
+            local chunkPosString = Utils.FormatPositionTableToString(chunk)
+            chunksNeeded[chunkPosString] = chunkPosString
+            Logging.Log("silo requested chunk generation: " .. chunkPosString, debugLogging)
+        end
+    end
+    region.TestSilo.chunksNeedGenerating = chunksNeeded
+end
+
+function Map.CheckTestSilosPosition(region, chunkPos)
+    if region.siloPosition ~= nil then
+        return
+    end
+    local chunkPosString = Utils.FormatPositionTableToString(chunkPos)
+    if region.TestSilo.chunksNeedGenerating[chunkPosString] ~= nil then
+        region.TestSilo.chunksNeedGenerating[chunkPosString] = nil
+    else
+        return
+    end
+    if Utils.GetTableNonNilLength(region.TestSilo.chunksNeedGenerating) > 0 then
+        return
+    end
+
+    Logging.LogPrint("region has all requested chunks generated: " .. region.index, debugLogging)
+    local pos = Utils.GetValidPositionForEntityNearPosition("wills_spaceship_repair-rocket_silo_place_test", global.surface, region.TestSilo.pos, PLACEMENTRADIUS, 1)
+    if pos == nil then
+        Logging.LogPrint("region test silo position invalid: " .. region.index, debugLogging)
+        Map.GenerateTestSiloPosition(region)
+        return
+    end
+
+    local siloPrototype = game.entity_prototypes["wills_spaceship_repair-rocket_silo_place_test"]
+    local siloFootprint = Utils.ApplyBoundingBoxToPosition(pos, siloPrototype.collision_box)
+    Utils.DestroyAllObjectsInArea(global.surface, siloFootprint)
+
+    local entity = global.surface.create_entity {name = "rsc-silo-stage1", position = pos, force = "player"}
+    if entity == nil then
+        Logging.LogPrint("ERROR: Failed to place rocket silo in a valid position for region: " .. region.index)
+        return
+    end
+    Logging.LogPrint("region silo created: " .. region.index, debugLogging)
+    region.siloPosition = pos
 end
 
 return Map

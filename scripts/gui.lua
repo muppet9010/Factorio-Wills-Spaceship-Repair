@@ -119,9 +119,9 @@ end
 function Gui.CalculateOrderSlotTableValues()
     local tableValues = {}
     for _, order in pairs(global.orderSlots) do
-        local orderStatusTexts = Orders.GetOrderGuiState(order.index)
-        local orderTimeTexts = Orders.GetOrderGuiTime(order.index)
-        tableValues[order.index] = {index = order.index, status1 = orderStatusTexts[1], status2 = orderStatusTexts[2], timeValue = orderTimeTexts[1], timeColor = orderTimeTexts[2]}
+        local orderStatusText, orderStatusCountText = Orders.GetOrderGuiState(order.index)
+        local orderTimeText, orderTimeColor = Orders.GetOrderGuiTime(order.index)
+        tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, timeValue = orderTimeText, timeColor = orderTimeColor}
     end
     return tableValues
 end

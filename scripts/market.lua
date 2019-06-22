@@ -1,33 +1,37 @@
 local Market = {}
 local Logging = require("utility/logging")
+local Utils = require("utility/utils")
 
-Market.OnStartup = function()
+function Market.OnStartup()
     if global.marketEntity == nil then
-        global.marketEntity = Market.CreateMarketEntity(game.surfaces[1], {0, 0}, 20)
+        global.marketEntity = Market.CreateMarketEntity()
         if global.marketEntity == nil then
-            Logging.LogPrint("ERROR: Failed to create market near spawn")
+            return
         end
         Market.PopulateMarketItems(global.marketEntity)
     end
+    Market.OnLoad()
 end
 
-Market.OnLoad = function()
+function Market.OnLoad()
 end
 
-Market.CreateMarketEntity = function(surface, centerPos, radius)
-    local pos
-    while pos == nil do
-        pos = surface.find_non_colliding_position("market", centerPos, radius, 1, true)
-        radius = radius * 2
+function Market.CreateMarketEntity()
+    local pos = Utils.GetValidPositionForEntityNearPosition("market", global.surface, {0, 0}, 20, 5)
+    if pos == nil then
+        Logging.Log("ERROR: No valid market at spawn position found")
+        return nil
     end
-    local entity = surface.create_entity {name = "market", position = pos, force = "player"}
-    if entity ~= nil then
-        entity.destructible = false
+    local entity = global.surface.create_entity {name = "market", position = pos, force = "player"}
+    if entity == nil then
+        Logging.Log("ERROR: Market at spawn failed to create at valid position")
+        return nil
     end
+    entity.destructible = false
     return entity
 end
 
-Market.PopulateMarketItems = function(market)
+function Market.PopulateMarketItems(market)
     market.add_market_item {price = {{"coin", 200}}, offer = {type = "give-item", item = "modular-armor"}}
     market.add_market_item {price = {{"coin", 1300}}, offer = {type = "give-item", item = "power-armor"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 1}, {"coin", 300}}, offer = {type = "give-item", item = "power-armor"}}

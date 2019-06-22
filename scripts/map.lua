@@ -26,6 +26,8 @@ end
 
 function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_chunk_generated, "Map", Map.OnChunkGenerated)
+    Events.RegisterHandler(defines.events.on_entity_died, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
+    Events.RegisterHandler(defines.events.script_raised_destroy, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -51,7 +53,7 @@ function Map.OnChunkGenerated(event)
     if region == nil then
         region = Map.GenerateRegionForChunk(chunkPos)
     end
-    Map.CheckTestSilosPosition(region, chunkPos)
+    Map.TestSiloChunkGenerated(region, chunkPos)
 end
 
 function Map.GetRegionForChunkPos(chunkPos)
@@ -123,7 +125,7 @@ function Map.GenerateTestSiloPosition(region)
     region.TestSilo.chunksNeedGenerating = chunksNeeded
 end
 
-function Map.CheckTestSilosPosition(region, chunkPos)
+function Map.TestSiloChunkGenerated(region, chunkPos)
     if region.siloPosition ~= nil then
         return
     end
@@ -144,18 +146,35 @@ function Map.CheckTestSilosPosition(region, chunkPos)
         Map.GenerateTestSiloPosition(region)
         return
     end
+    Map.MakeSiloAtPosition(region, region.TestSilo.pos)
+end
 
+function Map.MakeSiloAtPosition(region, position)
     local siloPrototype = game.entity_prototypes["wills_spaceship_repair-rocket_silo_place_test"]
-    local siloFootprint = Utils.ApplyBoundingBoxToPosition(pos, siloPrototype.collision_box)
+    local siloFootprint = Utils.ApplyBoundingBoxToPosition(position, siloPrototype.collision_box)
     Utils.DestroyAllObjectsInArea(global.surface, siloFootprint)
 
-    local entity = global.surface.create_entity {name = "rsc-silo-stage1", position = pos, force = "player"}
+    local entity = global.surface.create_entity {name = "rsc-silo-stage1", position = position, force = "player"}
     if entity == nil then
         Logging.LogPrint("ERROR: Failed to place rocket silo in a valid position for region: " .. region.index)
         return
     end
     Logging.LogPrint("region silo created: " .. region.index, debugLogging)
-    region.siloPosition = pos
+    region.siloPosition = position
+end
+
+function Map.OnMaybeRocketSiloDiedDestroyed(event)
+    local entity = event.entity
+    if entity.name ~= "rocket-silo" and not string.find(entity.name, "rsc-silo-stage", 0, true) then
+        return
+    end
+    local pos = entity.position
+    Logging.LogPrint("Rocket silo (" .. entity.name .. ") destroyed: " .. Logging.PositionToString(pos), debugLogging)
+    local region = Map.GetRegionForChunkPos(Utils.GetChunkPositionForTilePosition(pos))
+    if region ~= nil then
+        Logging.LogPrint("Rocket silo scheduled for recreation", debugLogging)
+        Events.AddScheduledEvent(event.tick, "MakeSiloAtPosition-" .. region.index, Map.MakeSiloAtPosition(region, region.siloPosition))
+    end
 end
 
 return Map

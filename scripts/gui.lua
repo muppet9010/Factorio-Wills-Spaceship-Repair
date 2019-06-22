@@ -3,8 +3,10 @@ local Events = require("utility/events")
 local GuiUtil = require("utility/gui-util")
 local Utils = require("utility/utils")
 local Orders = require("scripts/orders")
+--local Logging = require("utility/logging")
 
 function Gui.OnStartup()
+    Events.AddScheduledEvent(60, "Gui.OnSecondUpdate", Gui.OnSecondUpdate)
     GuiUtil.CreateAllPlayersElementReferenceStorage()
     Gui.GuiRecreateAll()
 
@@ -12,11 +14,11 @@ function Gui.OnStartup()
 end
 
 function Gui.OnLoad()
-    Events.RegisterHandler("on60ticks", "Gui", Gui.OnSecondUpdate)
     Events.RegisterHandler(defines.events.on_player_joined_game, "Gui", Gui.OnPlayerJoinedGame)
 end
 
-function Gui.OnSecondUpdate()
+function Gui.OnSecondUpdate(event)
+    Events.AddScheduledEvent(event.tick + 60, "Gui.OnSecondUpdate", Gui.OnSecondUpdate)
     Gui.RefreshAll()
 end
 

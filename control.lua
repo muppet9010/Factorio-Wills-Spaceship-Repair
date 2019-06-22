@@ -49,17 +49,14 @@ local function OnLoad()
     Gui.OnLoad()
 end
 
-local function On60Ticks()
-    Events.RaiseEvent({name = "on60ticks"})
-end
-
 script.on_init(OnStartup)
 script.on_configuration_changed(OnStartup)
 script.on_load(OnLoad)
-Events.RegisterEvent("on60ticks")
-script.on_nth_tick(60, On60Ticks)
 Events.RegisterEvent(defines.events.on_runtime_mod_setting_changed)
 Events.RegisterEvent(defines.events.on_rocket_launched)
 Events.RegisterEvent(defines.events.on_research_finished)
 Events.RegisterEvent(defines.events.on_player_joined_game)
 Events.RegisterEvent(defines.events.on_chunk_generated)
+Events.RegisterEvent(defines.events.on_entity_died)
+Events.RegisterEvent(defines.events.script_raised_destroy)
+Events.RegisterScheduler()

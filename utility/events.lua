@@ -1,4 +1,6 @@
 local Utils = require("utility/utils")
+local Logging = require("utility/logging")
+
 local Events = {}
 if MOD == nil then
     MOD = {}
@@ -62,6 +64,41 @@ function Events.RaiseEvent(eventData)
         local eventId = MOD.customEventNameToId[eventName]
         script.raise_event(eventId, eventData)
     end
+end
+
+function Events.RegisterScheduler()
+    Events.RegisterEvent("UTILITYSCHEDULER")
+    script.on_event(defines.events.on_tick, Events.OnSchedulerCycle)
+end
+
+function Events.OnSchedulerCycle(event)
+    local currectTick = event.tick
+    if global.UTILITYSCHEDULER == nil then
+        return
+    end
+    global.UTILITYSCHEDULERLASTTICK = global.UTILITYSCHEDULERLASTTICK or 0
+    for tick = global.UTILITYSCHEDULERLASTTICK, currectTick do
+        if global.UTILITYSCHEDULER[tick] ~= nil then
+            for _, scheduledFunction in pairs(global.UTILITYSCHEDULER[tick]) do
+                scheduledFunction(event)
+            end
+        end
+        global.UTILITYSCHEDULER[tick] = nil
+    end
+    global.UTILITYSCHEDULERLASTTICK = currectTick
+end
+
+--IF THE FUNCTION THAT IS REGISTERED IS REMOVED IN A FUTURE VERSION IT WILL CAUSE AN ERROR.
+function Events.AddScheduledEvent(eventTick, eventName, eventFunction)
+    global.UTILITYSCHEDULER = global.UTILITYSCHEDULER or {}
+    global.UTILITYSCHEDULER[eventTick] = global.UTILITYSCHEDULER[eventTick] or {}
+    if global.UTILITYSCHEDULER[eventTick][eventName] ~= nil then
+        Logging.LogPrint("WARNING: Overridden schedule event: " .. eventName .. " at tick " .. eventTick)
+    end
+    global.UTILITYSCHEDULER[eventTick][eventName] = eventFunction
+end
+
+function Events.RemoveScheduledEvent()
 end
 
 return Events

@@ -417,18 +417,12 @@ function Utils.GetBiterType(modEnemyProbabilities, spawnerType, evolution)
         modEnemyProbabilities[spawnerType].probabilities = Utils._CalculateSpecificBiterSelectionProbabilities(spawnerType, evolution)
     end
 
-    local randNum = math.random()
-    for _, probability in pairs(modEnemyProbabilities[spawnerType].probabilities) do
-        if probability.top > 0 and randNum >= probability.bottom and randNum <= probability.top then
-            return probability.unit
-        end
-    end
+    return Utils.GetRandomEntryFromNormalisedDataSet(modEnemyProbabilities[spawnerType].probabilitie, "chance").unit
 end
 
 function Utils._CalculateSpecificBiterSelectionProbabilities(spawnerType, currentEvolution)
     local rawUnitProbs = game.entity_prototypes[spawnerType].result_units
     local currentEvolutionProbabilities = {}
-    local currentEvolutionProbabilitiesTop = 0
 
     for _, possibility in pairs(rawUnitProbs) do
         local startSpawnPointIndex = nil
@@ -455,23 +449,37 @@ function Utils._CalculateSpecificBiterSelectionProbabilities(spawnerType, curren
             else
                 weight = startSpawnPoint.weight
             end
-            local probability = currentEvolutionProbabilitiesTop + weight
-            table.insert(currentEvolutionProbabilities, {bottom = currentEvolutionProbabilitiesTop, top = probability, unit = possibility.unit})
-            currentEvolutionProbabilitiesTop = probability
+            table.insert(currentEvolutionProbabilities, {chance = weight, unit = possibility.unit})
         end
     end
 
-    local normalisedcurrentEvolutionProbabilities = {}
-    local normaliseMultiplier = 1 / currentEvolutionProbabilitiesTop
-    for index, probability in pairs(currentEvolutionProbabilities) do
-        normalisedcurrentEvolutionProbabilities[index] = {
-            bottom = probability.bottom * normaliseMultiplier,
-            top = probability.top * normaliseMultiplier,
-            unit = probability.unit
-        }
-    end
+    local normalisedcurrentEvolutionProbabilities = Utils.NormalisedChanceList(currentEvolutionProbabilities, "chance")
 
     return normalisedcurrentEvolutionProbabilities
+end
+
+function Utils.NormalisedChanceList(dataSet, chancePropertyName)
+    local totalChance = 0
+    for k, v in pairs(dataSet) do
+        totalChance = totalChance + v[chancePropertyName]
+    end
+    local multiplyer = 1 / totalChance
+    for _, v in pairs(dataSet) do
+        v[chancePropertyName] = v[chancePropertyName] * multiplyer
+    end
+end
+
+function Utils.GetRandomEntryFromNormalisedDataSet(dataSet, chancePropertyName)
+    local random = math.random()
+    local chanceRangeLow = 0
+    local chanceRangeHigh
+    for _, v in pairs(dataSet) do
+        chanceRangeHigh = chanceRangeLow + v[chancePropertyName]
+        if random >= chanceRangeLow and random <= chanceRangeHigh then
+            return v
+        end
+        chanceRangeLow = chanceRangeHigh
+    end
 end
 
 function Utils.DisableSiloScript()

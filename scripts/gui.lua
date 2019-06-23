@@ -57,9 +57,6 @@ function Gui.CreateGui(player)
     GuiUtil.AddElement({parent = statusFrame, name = "workforce_recruited", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
     GuiUtil.AddElement({parent = statusFrame, name = "game_time", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
 
-    local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
-    GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = true}, true)
-
     Gui.RefreshPlayer(player)
 end
 
@@ -107,26 +104,34 @@ function Gui.UpdateStatusElements(player, guiValues)
 end
 
 function Gui.UpdateOrderSlotElements(player, orderSlotValues)
-    local table = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "orderSlots", "table")
-    for _, child in pairs(table.children) do
-        if child.valid then
-            child.destroy()
+    if #orderSlotValues > 0 then
+        local table = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "orderSlots", "table")
+        if table == nil then
+            local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "gui", "flow")
+            local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
+            table = GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = true}, true)
         end
-    end
-    for _, order in pairs(orderSlotValues) do
-        GuiUtil.AddElement({parent = table, name = "order_slot_name_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_slot_name-label", order.index}, style = "muppet_padded_table_cell"}, false)
-        GuiUtil.AddElement({parent = table, name = "order_status_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_status-label", order.status1, order.status2}, style = "muppet_padded_table_cell"}, false)
-        local orderTime = GuiUtil.AddElement({parent = table, name = "order_time" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_time-label", order.timeValue}, style = "muppet_padded_table_cell"}, false)
-        orderTime.style.font_color = order.timeColor
+        for _, child in pairs(table.children) do
+            if child.valid then
+                child.destroy()
+            end
+        end
+        for _, order in pairs(orderSlotValues) do
+            GuiUtil.AddElement({parent = table, name = "order_slot_name_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_slot_name-label", order.index}, style = "muppet_padded_table_cell"}, false)
+            local statusElm = GuiUtil.AddElement({parent = table, name = "order_status_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_status-label", order.status1, order.status2}, style = "muppet_padded_table_cell"}, false)
+            statusElm.style.font_color = order.statusColor
+            local timerElm = GuiUtil.AddElement({parent = table, name = "order_time" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_time-label", order.timeValue}, style = "muppet_padded_table_cell"}, false)
+            timerElm.style.font_color = order.timeColor
+        end
     end
 end
 
 function Gui.CalculateOrderSlotTableValues()
     local tableValues = {}
     for _, order in pairs(global.Orders.orderSlots) do
-        local orderStatusText, orderStatusCountText = Orders.GetOrderGuiState(order.index)
+        local orderStatusText, orderStatusCountText, orderStatusColor = Orders.GetOrderGuiState(order.index)
         local orderTimeText, orderTimeColor = Orders.GetOrderGuiTime(order.index)
-        tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, timeValue = orderTimeText, timeColor = orderTimeColor}
+        tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = orderTimeText, timeColor = orderTimeColor}
     end
     return tableValues
 end

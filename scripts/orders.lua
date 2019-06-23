@@ -2,12 +2,13 @@ local Orders = {}
 local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
+local Logging = require("utility/logging")
 
 --[[
     global.Orders.orderSlots = {
         {
             index = 1 -- Int ID of the array in the entry
-            state = [Orders.SlotStates]
+            stateName = [Orders.slotStates.name]
             item = "" -- the item name this order wants or nil
             itemCountNeeded = 3 -- the number of this item type needed or nil
             itemCountDone = 1 -- the number of this item type supplied or nil
@@ -17,25 +18,133 @@ local Events = require("utility/events")
     }
 
 ]]
-Orders.slotStates = {waitingCapacityTech = "waitingCapacityTech", waitingDrydock = "waitingDrydock", waitingOrderDecryptionStart = "waitingOrderDecryptionStart", waitingOrderDecryptionEnd = "waitingOrderDecryptionEnd", waitingItem = "waitingItem", waitingCustomerDepart = "waitingCustomerDepart"}
-Orders.TimeBonus = {}
-Orders.TimeBonus[(60 * 60 * 30)] = {bonusModifier = 1.1, guiColor = {r = 0, g = 255, b = 0, a = 255}}
-Orders.TimeBonus[(60 * 60 * 60 * 2)] = {bonusModifier = 1, guiColor = {r = 255, g = 252, b = 0, a = 255}}
-Orders.TimeBonus[(60 * 60 * 60 * 4)] = {bonusModifier = 0.9, guiColor = {r = 255, g = 211, b = 0, a = 255}}
-Orders.TimeBonus[(60 * 60 * 60 * 6)] = {bonusModifier = 0.8, guiColor = {r = 255, g = 0, b = 0, a = 255}}
+Orders.slotStates = {
+    waitingCapacityTech = {
+        name = "waitingCapacityTech",
+        timer = nil,
+        color = nil
+    },
+    waitingDrydock = {
+        name = "waitingDrydock",
+        timer = nil,
+        color = nil
+    },
+    waitingOrderDecryptionStart = {
+        name = "waitingOrderDecryptionStart",
+        timer = nil,
+        color = nil
+    },
+    waitingOrderDecryptionEnd = {
+        name = "waitingOrderDecryptionEnd",
+        timer = nil,
+        color = nil
+    },
+    waitingItem = {
+        name = "waitingItem",
+        timer = nil,
+        color = nil
+    },
+    waitingCustomerDepart = {
+        name = "waitingCustomerDepart",
+        timer = (60 * 60 * 1),
+        color = {r = 0, g = 255, b = 0, a = 255}
+    },
+    orderFailed = {
+        name = "orderFailed",
+        timer = (60 * 60 * 5),
+        color = {r = 255, g = 0, b = 0, a = 255}
+    }
+}
+Orders.timeBonus = {}
+Orders.timeBonus[(60 * 60 * 30)] = {bonusModifier = 1.1, guiColor = {r = 0, g = 255, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 2)] = {bonusModifier = 1, guiColor = {r = 255, g = 252, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 4)] = {bonusModifier = 0.9, guiColor = {r = 255, g = 211, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 6)] = {bonusModifier = 0.8, guiColor = {r = 255, g = 0, b = 0, a = 255}}
+
 Orders.shipParts = {
     ["wills_spaceship_repair-hull_component"] = {
         name = "wills_spaceship_repair-hull_component",
         value = 325000,
-        chance = 0.17
+        chance = 0.1687,
+        multiplePerOrder = {
+            {items = 1, chance = 0.6},
+            {items = 2, chance = 0.3},
+            {items = 3, chance = 0.1}
+        }
+    },
+    ["wills_spaceship_repair-spaceship_thruster"] = {
+        name = "wills_spaceship_repair-spaceship_thruster",
+        value = 80000,
+        chance = 0.1054,
+        multiplePerOrder = false
+    },
+    ["wills_spaceship_repair-fuel_cell"] = {
+        name = "wills_spaceship_repair-fuel_cell",
+        value = 450000,
+        chance = 0.1246,
+        multiplePerOrder = {
+            {items = 1, chance = 0.6},
+            {items = 2, chance = 0.3},
+            {items = 3, chance = 0.1}
+        }
+    },
+    ["wills_spaceship_repair-protection_field"] = {
+        name = "wills_spaceship_repair-protection_field",
+        value = 575000,
+        chance = 0.0962,
+        multiplePerOrder = {
+            {items = 1, chance = 0.6},
+            {items = 2, chance = 0.3},
+            {items = 3, chance = 0.1}
+        }
+    },
+    ["wills_spaceship_repair-fusion_reactor"] = {
+        name = "wills_spaceship_repair-fusion_reactor",
+        value = 1254000,
+        chance = 0.0668,
+        multiplePerOrder = false
+    },
+    ["wills_spaceship_repair-habitation"] = {
+        name = "wills_spaceship_repair-habitation",
+        value = 450000,
+        chance = 0.1218,
+        multiplePerOrder = {
+            {items = 1, chance = 0.6},
+            {items = 2, chance = 0.3},
+            {items = 3, chance = 0.1}
+        }
+    },
+    ["wills_spaceship_repair-life_support"] = {
+        name = "wills_spaceship_repair-life_support",
+        value = 780000,
+        chance = 0.1068,
+        multiplePerOrder = false
+    },
+    ["wills_spaceship_repair-command_center"] = {
+        name = "wills_spaceship_repair-command_center",
+        value = 1130000,
+        chance = 0.0734,
+        multiplePerOrder = false
+    },
+    ["wills_spaceship_repair-astrometrics"] = {
+        name = "wills_spaceship_repair-astrometrics",
+        value = 840000,
+        chance = 0.0991,
+        multiplePerOrder = false
+    },
+    ["wills_spaceship_repair-ftl_propulsion_system"] = {
+        name = "wills_spaceship_repair-ftl_propulsion_system",
+        value = 2236000,
+        chance = 0.0367,
+        multiplePerOrder = false
     }
-} -- TODO
+}
+Utils.NormalisedChanceList(Orders.shipParts, "chance")
 
 function Orders.OnStartup()
     global.Orders = global.Orders or {}
     global.Orders.orderSlots = global.Orders.orderSlots or {}
-    global.Orders.orderDecryptionsAllowed = global.Orders.orderDecryptionsAllowed or 0
-    Events.ScheduleEvent(60, "Orders.UpdateOrderSlotDeadlineTimes")
+    Events.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
 
     Orders.OnLoad()
 end
@@ -44,7 +153,7 @@ function Orders.OnLoad()
     Events.RegisterHandler(defines.events.on_research_finished, "Orders", Orders.OnResearchFinished)
     Events.RegisterHandler(defines.events.on_rocket_launched, "Orders", Orders.OnRocketLaunched)
     Events.RegisterHandler(defines.events.on_research_started, "Orders", Orders.OnResearchStarted)
-    Events.RegisterScheduledEventType("Orders.UpdateOrderSlotDeadlineTimes", Orders.UpdateOrderSlotDeadlineTimes)
+    Events.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
 end
 
 function Orders.OnResearchFinished(event)
@@ -60,15 +169,15 @@ function Orders.OnResearchStarted(event)
     local tech = event.research
     if string.find(tech.name, "wills_spaceship_repair-order_decryption-", 0, true) ~= nil then
         for _, orderSlot in pairs(global.Orders.orderSlots) do
-            if orderSlot.state == Orders.slotStates.waitingOrderDecryptionStart then
-                orderSlot.state = Orders.slotStates.waitingOrderDecryptionEnd
+            if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
+                orderSlot.stateName = Orders.slotStates.waitingOrderDecryptionEnd.name
                 return
             end
         end
     else
         for _, orderSlot in pairs(global.Orders.orderSlots) do
-            if orderSlot.state == Orders.slotStates.waitingOrderDecryptionEnd then
-                orderSlot.state = Orders.slotStates.waitingOrderDecryptionStart
+            if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name then
+                orderSlot.stateName = Orders.slotStates.waitingOrderDecryptionStart.name
             end
         end
     end
@@ -77,32 +186,40 @@ end
 function Orders.GetOrderGuiState(orderIndex)
     local order = global.Orders.orderSlots[orderIndex]
     local statusText, statusCountText = "", ""
-    if order.state == Orders.slotStates.waitingCapacityTech or order.state == Orders.slotStates.waitingDrydock or order.state == Orders.slotStates.waitingOrderDecryptionStart or order.state == Orders.slotStates.waitingOrderDecryptionEnd or order.state == Orders.slotStates.waitingCustomerDepart then
-        statusText = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.state}
-    elseif order.state == Orders.slotStates.waitingItem then
+    local statusColor = Orders.slotStates[order.stateName].color
+    if
+        order.stateName == Orders.slotStates.waitingCapacityTech.name or order.stateName == Orders.slotStates.waitingDrydock.name or order.stateName == Orders.slotStates.waitingOrderDecryptionStart.name or order.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name or order.stateName == Orders.slotStates.waitingCustomerDepart.name or
+            order.stateName == Orders.slotStates.orderFailed.name
+     then
+        statusText = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.stateName}
+    elseif order.stateName == Orders.slotStates.waitingItem.name then
         statusText = {"item-name." .. order.item}
         if order.itemCountNeeded > 1 then
             statusCountText = " " .. order.itemCountDone .. " / " .. order.itemCountNeeded
         end
     end
-    return statusText, statusCountText
+    return statusText, statusCountText, statusColor
 end
 
 function Orders.GetOrderGuiTime(orderIndex)
     local order = global.Orders.orderSlots[orderIndex]
     local timeText, timeColor = "", nil
-    if order.state == Orders.slotStates.waitingItem then
+    if order.stateName == Orders.slotStates.waitingItem.name then
         timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
         timeColor = Orders.GetOrderTimeBonus(order).guiColor
-    elseif order.state == Orders.slotStates.waitingCustomerDepart then
+    elseif order.stateName == Orders.slotStates.waitingCustomerDepart.name then
         timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
+        timeColor = Orders.slotStates.waitingCustomerDepart.color
+    elseif order.stateName == Orders.slotStates.orderFailed.name then
+        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
+        timeColor = Orders.slotStates.orderFailed.color
     end
     return timeText, timeColor
 end
 
 function Orders.GetOrderTimeBonus(order)
     local waitingTicks = order.nextDeadlineTime - order.startTime
-    for delayTick, timeBonus in pairs(Orders.TimeBonus) do
+    for delayTick, timeBonus in pairs(Orders.timeBonus) do
         if waitingTicks <= delayTick then
             return timeBonus
         end
@@ -112,9 +229,8 @@ end
 function Orders.DryDockResearchCompleted()
     game.print({"message.wills_spaceship_repair-drydock_research_completed"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
-        if slot.state == Orders.slotStates.waitingCapacityTech then
-            slot.state = Orders.slotStates.waitingOrderDecryptionStart
-            Orders.AddOrderDecryptionResearch()
+        if slot.stateName == Orders.slotStates.waitingCapacityTech.name then
+            Orders.SetOrderSlotToWaitingOrderDecryptionStart(slot)
             return
         end
     end
@@ -123,21 +239,21 @@ end
 
 function Orders.OrderDecryptionResearchCompleted()
     game.print({"message.wills_spaceship_repair-order_decryption_completed"}, {r = 0, g = 1, b = 0, a = 1})
-    global.Orders.orderDecryptionsAllowed = global.Orders.orderDecryptionsAllowed - 1
     local decryptionAllowed = 0
-    local orderAdded = false
     for _, orderSlot in pairs(global.Orders.orderSlots) do
-        if orderSlot.state == Orders.slotStates.waitingOrderDecryptionEnd then
-            if not orderAdded then
-                Orders.AddOrderToOrderSlot(orderSlot)
-            else
-                decryptionAllowed = decryptionAllowed + 1
-            end
+        if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name then
+            Orders.AddOrderToOrderSlot(orderSlot)
+        elseif orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
+            decryptionAllowed = decryptionAllowed + 1
         end
     end
     local researchQueue = global.playerForce.research_queue
+    local queueStartPoint = 1
+    if decryptionAllowed == 0 then
+        queueStartPoint = 0
+    end
     for i, research in pairs(researchQueue) do
-        if research.name == "wills_spaceship_repair-order_decryption-1" then
+        if i > queueStartPoint and research.name == "wills_spaceship_repair-order_decryption-1" then
             if decryptionAllowed > 1 then
                 decryptionAllowed = decryptionAllowed - 1
             else
@@ -157,7 +273,7 @@ function Orders.AddOrderSlot(state)
     local slotIndex = #global.Orders.orderSlots + 1
     global.Orders.orderSlots[slotIndex] = {
         index = slotIndex,
-        state = state,
+        stateName = state.name,
         item = nil,
         itemCountNeeded = nil,
         itemCountDone = nil,
@@ -167,9 +283,14 @@ function Orders.AddOrderSlot(state)
     return global.Orders.orderSlots[slotIndex]
 end
 
-function Orders.AddOrderDecryptionResearch()
+function Orders.SetOrderSlotToWaitingOrderDecryptionStart(order)
+    order.stateName = Orders.slotStates.waitingOrderDecryptionStart.name
+    order.item = nil
+    order.itemCountNeeded = nil
+    order.itemCountDone = nil
+    order.startTime = nil
+    order.nextDeadlineTime = nil
     global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
-    global.Orders.orderDecryptionsAllowed = global.Orders.orderDecryptionsAllowed + 1
     global.playerForce.technologies["wills_spaceship_repair-order_decryption-1"].enabled = true
 end
 
@@ -187,13 +308,12 @@ end
 function Orders.DrydockLaunched()
     game.print({"message.wills_spaceship_repair-drydock_launched"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
-        if slot.state == Orders.slotStates.waitingDrydock then
-            slot.state = Orders.slotStates.waitingOrderDecryptionStart
-            Orders.AddOrderDecryptionResearch()
+        if slot.stateName == Orders.slotStates.waitingDrydock.name then
+            Orders.SetOrderSlotToWaitingOrderDecryptionStart(slot)
             return
         end
     end
-    Orders.AddOrderSlot(Orders.slotStates.waitingCapacityTech)
+    Orders.AddOrderSlot(Orders.slotStates.waitingCapacityTech.name)
 end
 
 function Orders.ShipPartLaunched(shipPartName)
@@ -201,27 +321,43 @@ function Orders.ShipPartLaunched(shipPartName)
 end
 
 function Orders.AddOrderToOrderSlot(orderSlot)
-    orderSlot.state = Orders.slotStates.waitingItem
-    --TODO - testing data
-    orderSlot.item = "wills_spaceship_repair-hull_component"
-    orderSlot.itemCountNeeded = 2
-    orderSlot.itemCountDone = 1
+    orderSlot.stateName = Orders.slotStates.waitingItem.name
+    local shipPart = Utils.GetRandomEntryFromNormalisedDataSet(Orders.shipParts, "chance")
+    orderSlot.item = shipPart.name
+    if shipPart.multiplePerOrder == false then
+        orderSlot.itemCountNeeded = 1
+    else
+        orderSlot.itemCountNeeded = Utils.GetRandomEntryFromNormalisedDataSet(shipPart.multiplePerOrder, "chance").items
+    end
+    orderSlot.itemCountDone = 0
     orderSlot.startTime = game.tick
-    orderSlot.nextDeadlineTime = game.tick + (60 * 60 * 30)
+    Orders.UpdateOrderSlotDeadlineTimes(orderSlot, game.tick)
 end
 
-function Orders.UpdateOrderSlotDeadlineTimes(event)
+function Orders.UpdateAllOrdersSlotDeadlineTimes(event)
     local tick = event.tick
-    Events.ScheduleEvent(tick + 60, "Orders.UpdateOrderSlotDeadlineTimes")
+    Events.ScheduleEvent(tick + 60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
     for _, order in pairs(global.Orders.orderSlots) do
-        if order.nextDeadlineTime ~= nil and order.nextDeadlineTime <= tick then
-            local waitingTicks = tick - order.startTime
-            for delayTick in pairs(Orders.TimeBonus) do
-                if waitingTicks <= delayTick then
-                    order.nextDeadlineTime = order.startTime + delayTick
-                    break
-                end
+        if order.nextDeadlineTime ~= nil and tick >= order.nextDeadlineTime then
+            Orders.UpdateOrderSlotDeadlineTimes(order, tick)
+        end
+    end
+end
+
+function Orders.UpdateOrderSlotDeadlineTimes(order, tick)
+    if order.stateName == Orders.slotStates.waitingItem.name then
+        local waitingTicks = tick - order.startTime
+        for delayTick in pairs(Orders.timeBonus) do
+            if waitingTicks <= delayTick then
+                order.nextDeadlineTime = order.startTime + delayTick
+                return
             end
+        end
+        order.stateName = Orders.slotStates.orderFailed.name
+        order.nextDeadlineTime = tick + Orders.slotStates.orderFailed.timer
+    elseif order.stateName == Orders.slotStates.orderFailed.name or order.stateName == Orders.slotStates.waitingCustomerDepart.name then
+        if tick >= order.nextDeadlineTime then
+            Orders.SetOrderSlotToWaitingOrderDecryptionStart(order)
         end
     end
 end

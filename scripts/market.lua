@@ -17,7 +17,11 @@ function Market.OnLoad()
 end
 
 function Market.CreateMarketEntity()
-    local pos = Utils.GetValidPositionForEntityNearPosition("market", global.surface, {0, 0}, 20, 5)
+    local nearSpawnRandomSpot = {
+        x = math.random(-20, 20),
+        y = math.random(-20, 20)
+    }
+    local pos = Utils.GetValidPositionForEntityNearPosition("market", global.surface, nearSpawnRandomSpot, 20, 5)
     if pos == nil then
         Logging.Log("ERROR: No valid market at spawn position found")
         return nil

@@ -7,3 +7,4 @@ Supporting workforce has to be researched and then paid an hourly wage.
 All high tech personal equipment must be brought through the market which is at spawn area.
 
 Many graphics and recipes copied/inspired from Space Extension Mod (SpaceX) under its MIT licence.
+Assembling machine graphical mask from Bobs Assembling Machines with permission.

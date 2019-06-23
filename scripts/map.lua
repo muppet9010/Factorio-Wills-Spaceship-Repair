@@ -3,10 +3,11 @@ local Events = require("utility/events")
 local Utils = require("utility/utils")
 local Logging = require("utility/logging")
 
-Map.regionSize = 2496
-Map.regionEdgeMarginTiles = 512
-Map.regionEdgeLengthChunks = Map.regionSize / 32
-Map.placementRadius = 20
+local desiredRegionSize = 2500
+Map.regionEdgeLengthChunks = math.floor(desiredRegionSize / 32)
+Map.regionSize = Map.regionEdgeLengthChunks * 32
+Map.regionEdgeMarginTiles = math.floor(Map.regionEdgeLengthChunks / 5) * 32
+Map.placementAccuracyRadius = 20
 Map.entityTypeDetails = {
     silo = {
         entryName = "Silo",
@@ -50,7 +51,11 @@ function Map.OnLoad()
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
-    local pos = Utils.GetValidPositionForEntityNearPosition("wills_spaceship_repair-steel_coin_chest_assembling_machine", global.surface, {0, 0}, 20, 5)
+    local nearSpawnRandomSpot = {
+        x = math.random(-20, 20),
+        y = math.random(-20, 20)
+    }
+    local pos = Utils.GetValidPositionForEntityNearPosition("wills_spaceship_repair-steel_coin_chest_assembling_machine", global.surface, nearSpawnRandomSpot, 20, 5)
     if pos == nil then
         Logging.Log("ERROR: No valid coin machine at spawn position found")
         return nil
@@ -105,13 +110,13 @@ function Map.GenerateRegionForChunk(chunkPos)
             attempts = 0,
             prototypeName = "wills_spaceship_repair-rocket_silo_place_test"
         },
-        TestCoinMachine = {
-            attempts = 0,
-            prototypeName = "wills_spaceship_repair-coin_machine_place_test"
-        },
         Silo = {
             position = nil,
             prototypeName = "rsc-silo-stage1"
+        },
+        TestCoinMachine = {
+            attempts = 0,
+            prototypeName = "wills_spaceship_repair-coin_machine_place_test"
         },
         CoinMachine = {
             position = nil,
@@ -121,7 +126,6 @@ function Map.GenerateRegionForChunk(chunkPos)
     global.Map.regions[regionPosString] = region
     Logging.LogPrint("GenerateRegion: " .. regionPosString, debugLogging)
     Map.GenerateEntityRandomPosition(region, Map.entityTypeDetails["silo"])
-    Map.GenerateEntityRandomPosition(region, Map.entityTypeDetails["coinMachine"])
     return region
 end
 
@@ -135,15 +139,58 @@ function Map.GenerateEntityRandomPosition(region, entryType)
         return
     end
     local testEntity = game.entity_prototypes[regionTestEntry.prototypeName]
-    local testPos = {
-        x = math.random(region.regionInnerArea.left_top.x, region.regionInnerArea.right_bottom.x),
-        y = math.random(region.regionInnerArea.left_top.y, region.regionInnerArea.right_bottom.y)
-    }
+    local testPos
+    if testEntryName == "TestSilo" then
+        testPos = {
+            x = math.random(region.regionInnerArea.left_top.x, region.regionInnerArea.right_bottom.x),
+            y = math.random(region.regionInnerArea.left_top.y, region.regionInnerArea.right_bottom.y)
+        }
+    elseif testEntryName == "TestCoinMachine" then
+        local directions = {}
+        local northMaxY = region.Silo.position.y - Map.regionEdgeMarginTiles
+        if northMaxY > region.regionInnerArea.left_top.y then
+            table.insert(directions, "north")
+        end
+        local southMinY = region.Silo.position.y + Map.regionEdgeMarginTiles
+        if southMinY < region.regionInnerArea.right_bottom.y then
+            table.insert(directions, "south")
+        end
+        local eastMinX = region.Silo.position.x + Map.regionEdgeMarginTiles
+        if eastMinX < region.regionInnerArea.right_bottom.x then
+            table.insert(directions, "east")
+        end
+        local westMaxX = region.Silo.position.x - Map.regionEdgeMarginTiles
+        if westMaxX > region.regionInnerArea.left_top.x then
+            table.insert(directions, "west")
+        end
+        local randomDirection = directions[math.random(#directions)]
+        if randomDirection == "north" then
+            testPos = {
+                x = math.random(region.regionInnerArea.left_top.x, region.regionInnerArea.right_bottom.x),
+                y = math.random(region.regionInnerArea.left_top.y, northMaxY)
+            }
+        elseif randomDirection == "south" then
+            testPos = {
+                x = math.random(region.regionInnerArea.left_top.x, region.regionInnerArea.right_bottom.x),
+                y = math.random(southMinY, region.regionInnerArea.right_bottom.y)
+            }
+        elseif randomDirection == "east" then
+            testPos = {
+                x = math.random(eastMinX, region.regionInnerArea.right_bottom.x),
+                y = math.random(region.regionInnerArea.left_top.y, region.regionInnerArea.right_bottom.y)
+            }
+        elseif randomDirection == "west" then
+            testPos = {
+                x = math.random(region.regionInnerArea.left_top.x, westMaxX),
+                y = math.random(region.regionInnerArea.left_top.y, region.regionInnerArea.right_bottom.y)
+            }
+        end
+    end
     regionTestEntry.pos = testPos
     local entityFootprint = Utils.ApplyBoundingBoxToPosition(testPos, testEntity.collision_box)
     local entityPlacementArea = {
-        left_top = Utils.ApplyOffsetToPosition(entityFootprint.left_top, {x = -Map.placementRadius, y = -Map.placementRadius}),
-        right_bottom = Utils.ApplyOffsetToPosition(entityFootprint.right_bottom, {x = Map.placementRadius, y = Map.placementRadius})
+        left_top = Utils.ApplyOffsetToPosition(entityFootprint.left_top, {x = -Map.placementAccuracyRadius, y = -Map.placementAccuracyRadius}),
+        right_bottom = Utils.ApplyOffsetToPosition(entityFootprint.right_bottom, {x = Map.placementAccuracyRadius, y = Map.placementAccuracyRadius})
     }
     local chunkArea = {
         left_top = Utils.GetChunkPositionForTilePosition(entityPlacementArea.left_top),
@@ -165,7 +212,7 @@ end
 function Map.TestEntityChunkGenerated(region, chunkPos, entryType)
     local testEntryName = entryType.testEntryName
     local regionTestEntry = region[testEntryName]
-    if region[entryType.entryName].position ~= nil then
+    if region[entryType.entryName].position ~= nil or regionTestEntry.chunksNeedGenerating == nil then
         return
     end
     local chunkPosString = Utils.FormatPositionTableToString(chunkPos)
@@ -179,7 +226,7 @@ function Map.TestEntityChunkGenerated(region, chunkPos, entryType)
     end
 
     Logging.LogPrint("'" .. testEntryName .. "' region has all requested chunks generated: " .. region.index, debugLogging)
-    local pos = Utils.GetValidPositionForEntityNearPosition(regionTestEntry.prototypeName, global.surface, regionTestEntry.pos, Map.placementRadius, 1)
+    local pos = Utils.GetValidPositionForEntityNearPosition(regionTestEntry.prototypeName, global.surface, regionTestEntry.pos, Map.placementAccuracyRadius, 1)
     if pos == nil then
         Logging.LogPrint("region '" .. testEntryName .. "' no valid position found: " .. region.index, debugLogging)
         Map.GenerateEntityRandomPosition(region, entryType)
@@ -205,6 +252,9 @@ function Map.MakeEntityAtPosition(region, position, entryType)
     end
     Logging.LogPrint("region '" .. entryName .. "' created: " .. region.index, debugLogging)
     regionEntry.position = position
+    if entryName == "Silo" then
+        Map.GenerateEntityRandomPosition(region, Map.entityTypeDetails["coinMachine"])
+    end
 end
 
 function Map.ScheduledMakeSiloAtPosition(event)

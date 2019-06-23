@@ -1,5 +1,6 @@
 local Constants = require("constants")
 local Utils = require("utility/utils")
+--local Logging = require("utility/logging")
 
 local genericCoinMachine = {
     type = "assembling-machine",
@@ -11,7 +12,7 @@ local genericCoinMachine = {
         }
     },
     order = "zzz",
-    flags = {"placeable-player", "player-creation"},
+    flags = {"placeable-player"},
     max_health = 400,
     dying_explosion = "medium-explosion",
     corpse = "medium-remnants",
@@ -96,7 +97,8 @@ local genericCoinMachine = {
         emissions_per_minute = 2
     },
     energy_usage = "500kW",
-    allowed_effects = nil
+    allowed_effects = nil,
+    map_color = data.raw["utility-constants"].default.chart.default_friendly_color
 }
 
 local function MakeSpecificCoinMachine(coinChestType)

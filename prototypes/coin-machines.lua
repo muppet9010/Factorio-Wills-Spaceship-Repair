@@ -11,7 +11,7 @@ local genericCoinMachine = {
         }
     },
     order = "zzz",
-    flags = {"placeable-player"},
+    flags = {"placeable-player", "player-creation"},
     max_health = 400,
     dying_explosion = "medium-explosion",
     corpse = "medium-remnants",

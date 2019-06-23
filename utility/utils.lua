@@ -641,6 +641,7 @@ function Utils.GetValidPositionForEntityNearPosition(entityName, surface, center
             return nil
         end
     end
+    return nil
 end
 
 return Utils

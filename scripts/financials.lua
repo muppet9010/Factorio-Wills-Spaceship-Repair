@@ -1,13 +1,14 @@
 local Financials = {}
 
 function Financials.OnStartup()
-    global.profitMade = global.profitMade or 0
-    global.profitTarget = global.profitTarget or 0
-    global.bankruptcyLimit = global.bankruptcyLimit or 0
-    global.dividendsPaid = global.dividendsPaid or 0
-    global.dividendsTotal = global.dividendsTotal or 0
-    global.wagesPaid = global.wagesPaid or 0
-    global.wagesTotal = global.wagesTotal or 0
+    global.Financials = global.Financials or {}
+    global.Financials.profitMade = global.Financials.profitMade or 0
+    global.Financials.profitTarget = global.Financials.profitTarget or 0
+    global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit or 0
+    global.Financials.dividendsPaid = global.Financials.dividendsPaid or 0
+    global.Financials.dividendsTotal = global.Financials.dividendsTotal or 0
+    global.Financials.wagesPaid = global.Financials.wagesPaid or 0
+    global.Financials.wagesTotal = global.Financials.wagesTotal or 0
 
     Financials.OnLoad()
 end

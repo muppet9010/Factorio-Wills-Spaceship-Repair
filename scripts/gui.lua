@@ -81,17 +81,17 @@ end
 
 function Gui.CalculateStatusElementValues()
     local guiValues = {}
-    guiValues.totalDebt = Utils.DisplayNumber((global.wagesTotal - global.wagesPaid) + (global.dividendsTotal - global.dividendsPaid))
-    guiValues.bankruptcyLimit = Utils.DisplayNumber(global.bankruptcyLimit)
-    guiValues.dividendsPaid = Utils.DisplayNumber(global.dividendsPaid)
-    guiValues.dividendsTotal = Utils.DisplayNumber(global.dividendsTotal)
-    guiValues.wagesPaid = Utils.DisplayNumber(global.wagesPaid)
-    guiValues.wagesTotal = Utils.DisplayNumber(global.wagesTotal)
+    guiValues.totalDebt = Utils.DisplayNumber((global.Financials.wagesTotal - global.Financials.wagesPaid) + (global.Financials.dividendsTotal - global.Financials.dividendsPaid))
+    guiValues.bankruptcyLimit = Utils.DisplayNumber(global.Financials.bankruptcyLimit)
+    guiValues.dividendsPaid = Utils.DisplayNumber(global.Financials.dividendsPaid)
+    guiValues.dividendsTotal = Utils.DisplayNumber(global.Financials.dividendsTotal)
+    guiValues.wagesPaid = Utils.DisplayNumber(global.Financials.wagesPaid)
+    guiValues.wagesTotal = Utils.DisplayNumber(global.Financials.wagesTotal)
     guiValues.currentWorkforce = #game.connected_players - 1
     guiValues.maxWorkforce = global.recruitedWorkforceCount
     guiValues.gameTime = Utils.DisplayTimeOfTicks(game.tick, "hour", "second")
-    guiValues.profitMade = Utils.DisplayNumber(global.profitMade)
-    guiValues.profitTarget = Utils.DisplayNumber(global.profitTarget)
+    guiValues.profitMade = Utils.DisplayNumber(global.Financials.profitMade)
+    guiValues.profitTarget = Utils.DisplayNumber(global.Financials.profitTarget)
     return guiValues
 end
 
@@ -123,7 +123,7 @@ end
 
 function Gui.CalculateOrderSlotTableValues()
     local tableValues = {}
-    for _, order in pairs(global.orderSlots) do
+    for _, order in pairs(global.Orders.orderSlots) do
         local orderStatusText, orderStatusCountText = Orders.GetOrderGuiState(order.index)
         local orderTimeText, orderTimeColor = Orders.GetOrderGuiTime(order.index)
         tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, timeValue = orderTimeText, timeColor = orderTimeColor}

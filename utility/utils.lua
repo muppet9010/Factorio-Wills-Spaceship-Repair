@@ -479,7 +479,6 @@ function Utils.DisableSiloScript()
     if remote.interfaces["silo_script"] == nil then
         return
     end
-    Utils.DisableWinOnRocket()
     local items = remote.call("silo_script", "get_tracked_items")
     for itemName in pairs(items) do
         remote.call("silo_script", "remove_tracked_item", itemName)

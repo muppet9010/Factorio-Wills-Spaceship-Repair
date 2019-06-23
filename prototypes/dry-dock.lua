@@ -44,10 +44,6 @@ data:extend(
                 {
                     type = "nothing",
                     effect_description = {"technology-effect.wills_spaceship_repair-dry_dock"}
-                },
-                {
-                    type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-dry_dock"
                 }
             },
             prerequisites = {"space-science-pack"},

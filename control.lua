@@ -9,22 +9,25 @@ local Market = require("scripts/market")
 local Map = require("scripts/map")
 
 local function SetTestData()
-    global.profitMade = 0
-    global.profitTarget = 50000
-    global.bankruptcyLimit = 1500000
-    global.dividendsPaid = 150000
-    global.dividendsTotal = 500000
-    global.wagesPaid = 3000
-    global.wagesTotal = 6500
+    global.Financials.profitMade = 0
+    global.Financials.profitTarget = 50000
+    global.Financials.bankruptcyLimit = 1500000
+    global.Financials.dividendsPaid = 150000
+    global.Financials.dividendsTotal = 500000
+    global.Financials.wagesPaid = 3000
+    global.Financials.wagesTotal = 6500
 
-    global.orderSlots[1] = {index = 1, state = Orders.SlotStates.waitingItem, item = "wills_spaceship_repair-hull_component", itemCountNeeded = 2, itemCountDone = 1, startTime = 0, nextDeadlineTime = (60 * 60 * 30)}
-    global.orderSlots[2] = {index = 2, state = Orders.SlotStates.waitingCustomerDepart, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = (60 * 15)}
-    global.orderSlots[3] = {index = 3, state = Orders.SlotStates.waitingDrydock, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = nil}
+    global.Orders.orderSlots[1] = {index = 1, state = Orders.slotStates.waitingItem, item = "wills_spaceship_repair-hull_component", itemCountNeeded = 2, itemCountDone = 1, startTime = 0, nextDeadlineTime = (60 * 60 * 30)}
+    global.Orders.orderSlots[2] = {index = 2, state = Orders.slotStates.waitingCustomerDepart, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = (60 * 15)}
+    global.Orders.orderSlots[3] = {index = 3, state = Orders.slotStates.waitingDrydock, item = nil, itemCountNeeded = nil, itemCountDone = nil, startTime = nil, nextDeadlineTime = nil}
 end
 
 local function OnStartup()
     global.surface = game.surfaces[1]
+    global.playerForce = game.forces[1]
+    global.playerForce.research_queue_enabled = true
     Utils.DisableIntroMessage()
+    Utils.DisableWinOnRocket()
     RecruitWorkforce.OnStartup()
     Financials.OnStartup()
     Investments.OnStartup()
@@ -34,7 +37,7 @@ local function OnStartup()
 
     Gui.OnStartup()
 
-    SetTestData()
+    --SetTestData()
 end
 
 local function OnLoad()
@@ -55,6 +58,7 @@ script.on_load(OnLoad)
 Events.RegisterEvent(defines.events.on_runtime_mod_setting_changed)
 Events.RegisterEvent(defines.events.on_rocket_launched)
 Events.RegisterEvent(defines.events.on_research_finished)
+Events.RegisterEvent(defines.events.on_research_started)
 Events.RegisterEvent(defines.events.on_player_joined_game)
 Events.RegisterEvent(defines.events.on_chunk_generated)
 Events.RegisterEvent(defines.events.on_entity_died)

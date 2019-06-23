@@ -46,46 +46,23 @@ local genericCoinMachine = {
     animation = {
         layers = {
             {
-                filename = "__base__/graphics/entity/assembling-machine-0/assembling-machine-0.png",
+                filename = Constants.AssetModName .. "/graphics/bobs-assembly-machines/assembling-machine-3.png",
                 priority = "high",
-                width = 108,
-                height = 114,
+                width = 142,
+                height = 113,
                 frame_count = 32,
                 line_length = 8,
-                shift = util.by_pixel(0, 2),
-                hr_version = {
-                    filename = "__base__/graphics/entity/assembling-machine-0/hr-assembling-machine-0.png",
-                    priority = "high",
-                    width = 214,
-                    height = 226,
-                    frame_count = 32,
-                    line_length = 8,
-                    shift = util.by_pixel(0, 2),
-                    scale = 0.5
-                }
+                shift = {0.84, -0.09}
             },
             {
-                filename = "__base__/graphics/entity/assembling-machine-0/assembling-machine-0-shadow.png",
+                filename = Constants.AssetModName .. "/graphics/bobs-assembly-machines/assembling-machine-mask.png",
                 priority = "high",
-                width = 95,
-                height = 83,
-                frame_count = 1,
-                line_length = 1,
-                repeat_count = 32,
-                draw_as_shadow = true,
-                shift = util.by_pixel(8.5, 5.5),
-                hr_version = {
-                    filename = "__base__/graphics/entity/assembling-machine-0/hr-assembling-machine-0-shadow.png",
-                    priority = "high",
-                    width = 190,
-                    height = 165,
-                    frame_count = 1,
-                    line_length = 1,
-                    repeat_count = 32,
-                    draw_as_shadow = true,
-                    shift = util.by_pixel(8.5, 5),
-                    scale = 0.5
-                }
+                width = 142,
+                height = 113,
+                frame_count = 32,
+                line_length = 8,
+                shift = {0.84, -0.09},
+                tint = {r = 0.7, g = 0.2, b = 0.1, a = 0.9}
             }
         }
     },

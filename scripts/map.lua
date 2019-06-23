@@ -28,7 +28,7 @@ Map.coinMachineChance = {
 }
 
 local debugLogging = false
---TODO: remove chunks generated if they aren't needed after both silo and coins placed. to avoid low evo biters remaining.
+
 function Map.OnStartup()
     global.Map = global.map or {}
     global.Map.regions = global.Map.regions or {}

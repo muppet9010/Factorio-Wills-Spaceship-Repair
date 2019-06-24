@@ -29,11 +29,23 @@ defaultStyle.muppet_padded_table = {
     left_padding = 5,
     right_padding = 5
 }
-defaultStyle.muppet_padded_table_cell = {
-    type = "label_style",
+defaultStyle.muppet_padded_table_and_cell = {
+    type = "table_style",
     top_padding = 5,
+    bottom_padding = 5,
     left_padding = 5,
-    right_padding = 5
+    right_padding = 5,
+    top_cell_padding = 5,
+    bottom_cell_padding = 5,
+    left_cell_padding = 5,
+    right_cell_padding = 5
+}
+defaultStyle.muppet_padded_table_cells = {
+    type = "table_style",
+    top_cell_padding = 5,
+    bottom_cell_padding = 5,
+    left_cell_padding = 5,
+    right_cell_padding = 5
 }
 
 defaultStyle.muppet_mod_button_sprite = {

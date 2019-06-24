@@ -374,7 +374,12 @@ function Utils._TableContentsToJSON(target_table, name, tablesLogged, indent, st
         table_contents = indentstring .. '"empty"'
     end
     if indent == 1 then
-        return '"' .. name .. '":{' .. "\r\n" .. table_contents .. "\r\n" .. "}"
+        local resultString = ""
+        if name ~= nil then
+            resultString = resultString .. '"' .. name .. '":'
+        end
+        resultString = resultString .. "{" .. "\r\n" .. table_contents .. "\r\n" .. "}"
+        return resultString
     else
         return table_contents
     end

@@ -38,7 +38,7 @@ function OrderAudit.LogUpdateOrder(order)
 end
 
 function OrderAudit.WriteOutTableCommand(commandData)
-    game.write_file(Constants.ModName .. "-order_audit_table.json", Utils.TableContentsToJSON(global.Orders.orderAuditTable, "OrderAuditTable"), false, commandData.player_index)
+    game.write_file(Constants.ModName .. "-order_audit_table.json", Utils.TableContentsToJSON(global.Orders.orderAuditTable), false, commandData.player_index)
 end
 
 return OrderAudit

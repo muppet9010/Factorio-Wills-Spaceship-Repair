@@ -354,7 +354,6 @@ function Orders.GenerateOrderInSlot(orderSlot)
     orderSlot.startTime = game.tick
     Orders.UpdateOrderSlotDeadlineTimes(orderSlot, game.tick)
     OrderAudit.LogNewOrder(orderSlot)
-    Logging.Log(serpent.block(global.Orders.orderSlots))
 end
 
 function Orders.UpdateAllOrdersSlotDeadlineTimes(event)

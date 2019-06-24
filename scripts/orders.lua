@@ -3,6 +3,7 @@ local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
 local Logging = require("utility/logging")
+local OrderAudit = require("scripts/orderAudit")
 
 --[[
     global.Orders.orderSlots = {
@@ -146,6 +147,7 @@ function Orders.OnStartup()
     global.Orders.orderSlots = global.Orders.orderSlots or {}
     Events.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
 
+    OrderAudit.OnStartup()
     Orders.OnLoad()
 end
 
@@ -154,6 +156,7 @@ function Orders.OnLoad()
     Events.RegisterHandler(defines.events.on_rocket_launched, "Orders", Orders.OnRocketLaunched)
     Events.RegisterHandler(defines.events.on_research_started, "Orders", Orders.OnResearchStarted)
     Events.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
+    OrderAudit.OnLoad(Orders.slotStates)
 end
 
 function Orders.OnResearchFinished(event)
@@ -170,14 +173,14 @@ function Orders.OnResearchStarted(event)
     if string.find(tech.name, "wills_spaceship_repair-order_decryption-", 0, true) ~= nil then
         for _, orderSlot in pairs(global.Orders.orderSlots) do
             if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
-                orderSlot.stateName = Orders.slotStates.waitingOrderDecryptionEnd.name
+                Orders.SetOrderSlotState(orderSlot, Orders.slotStates.waitingOrderDecryptionEnd.name)
                 return
             end
         end
     else
         for _, orderSlot in pairs(global.Orders.orderSlots) do
             if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name then
-                orderSlot.stateName = Orders.slotStates.waitingOrderDecryptionStart.name
+                Orders.SetOrderSlotState(orderSlot, Orders.slotStates.waitingOrderDecryptionStart.name)
             end
         end
     end
@@ -230,11 +233,11 @@ function Orders.DryDockResearchCompleted()
     game.print({"message.wills_spaceship_repair-drydock_research_completed"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
         if slot.stateName == Orders.slotStates.waitingCapacityTech.name then
-            Orders.SetOrderSlotToWaitingOrderDecryptionStart(slot)
+            Orders.SetOrderSlotState(slot, Orders.slotStates.waitingOrderDecryptionStart.name)
             return
         end
     end
-    Orders.AddOrderSlot(Orders.slotStates.waitingDrydock)
+    Orders.AddOrderSlot(Orders.slotStates.waitingDrydock.name)
 end
 
 function Orders.OrderDecryptionResearchCompleted()
@@ -242,7 +245,7 @@ function Orders.OrderDecryptionResearchCompleted()
     local decryptionAllowed = 0
     for _, orderSlot in pairs(global.Orders.orderSlots) do
         if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name then
-            Orders.AddOrderToOrderSlot(orderSlot)
+            Orders.SetOrderSlotState(orderSlot, Orders.slotStates.waitingItem.name)
         elseif orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
             decryptionAllowed = decryptionAllowed + 1
         end
@@ -269,29 +272,33 @@ function Orders.OrderDecryptionResearchCompleted()
     global.playerForce.research_queue = researchQueue
 end
 
-function Orders.AddOrderSlot(state)
+function Orders.AddOrderSlot(stateName)
     local slotIndex = #global.Orders.orderSlots + 1
-    global.Orders.orderSlots[slotIndex] = {
-        index = slotIndex,
-        stateName = state.name,
-        item = nil,
-        itemCountNeeded = nil,
-        itemCountDone = nil,
-        startTime = nil,
-        nextDeadlineTime = nil
-    }
-    return global.Orders.orderSlots[slotIndex]
+    local order = {index = slotIndex}
+    Orders.SetOrderSlotState(order, stateName)
+    global.Orders.orderSlots[slotIndex] = order
+    return order
 end
 
-function Orders.SetOrderSlotToWaitingOrderDecryptionStart(order)
-    order.stateName = Orders.slotStates.waitingOrderDecryptionStart.name
+function Orders.SetOrderSlotState(order, stateName)
+    local tick = game.tick
+    order.stateName = stateName
     order.item = nil
     order.itemCountNeeded = nil
     order.itemCountDone = nil
-    order.startTime = nil
-    order.nextDeadlineTime = nil
-    global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
-    global.playerForce.technologies["wills_spaceship_repair-order_decryption-1"].enabled = true
+    order.startTime = tick
+    if Orders.slotStates[stateName].timer ~= nil then
+        order.nextDeadlineTime = tick + Orders.slotStates[stateName].timer
+    else
+        order.nextDeadlineTime = nil
+    end
+    if stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
+        global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
+        global.playerForce.technologies["wills_spaceship_repair-order_decryption-1"].enabled = true
+    elseif stateName == Orders.slotStates.waitingItem.name then
+        Orders.GenerateOrderInSlot(order)
+    end
+    OrderAudit.LogUpdateOrder(order)
 end
 
 function Orders.OnRocketLaunched(event)
@@ -309,7 +316,7 @@ function Orders.DrydockLaunched()
     game.print({"message.wills_spaceship_repair-drydock_launched"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
         if slot.stateName == Orders.slotStates.waitingDrydock.name then
-            Orders.SetOrderSlotToWaitingOrderDecryptionStart(slot)
+            Orders.SetOrderSlotState(slot, Orders.slotStates.waitingOrderDecryptionStart.name)
             return
         end
     end
@@ -317,11 +324,25 @@ function Orders.DrydockLaunched()
 end
 
 function Orders.ShipPartLaunched(shipPartName)
-    --TODO
+    local longestWaitingTime, longestWaitingOrder = 0, nil
+    local tick = game.tick
+    for i, order in pairs(global.Orders.orderSlots) do
+        if order.item == shipPartName and order.itemCountDone < order.itemCountNeeded then
+            local timeWaiting = tick - order.startTime
+            if timeWaiting >= longestWaitingTime then
+                longestWaitingOrder = order
+            end
+        end
+    end
+    longestWaitingOrder.itemCountDone = longestWaitingOrder.itemCountDone + 1
+    if longestWaitingOrder.itemCountDone < longestWaitingOrder.itemCountNeeded then
+        return
+    end
+    --TODO - call the investments here
+    Orders.SetOrderSlotState(longestWaitingOrder, Orders.slotStates.waitingCustomerDepart.name)
 end
 
-function Orders.AddOrderToOrderSlot(orderSlot)
-    orderSlot.stateName = Orders.slotStates.waitingItem.name
+function Orders.GenerateOrderInSlot(orderSlot)
     local shipPart = Utils.GetRandomEntryFromNormalisedDataSet(Orders.shipParts, "chance")
     orderSlot.item = shipPart.name
     if shipPart.multiplePerOrder == false then
@@ -332,6 +353,8 @@ function Orders.AddOrderToOrderSlot(orderSlot)
     orderSlot.itemCountDone = 0
     orderSlot.startTime = game.tick
     Orders.UpdateOrderSlotDeadlineTimes(orderSlot, game.tick)
+    OrderAudit.LogNewOrder(orderSlot)
+    Logging.Log(serpent.block(global.Orders.orderSlots))
 end
 
 function Orders.UpdateAllOrdersSlotDeadlineTimes(event)
@@ -353,11 +376,10 @@ function Orders.UpdateOrderSlotDeadlineTimes(order, tick)
                 return
             end
         end
-        order.stateName = Orders.slotStates.orderFailed.name
-        order.nextDeadlineTime = tick + Orders.slotStates.orderFailed.timer
+        Orders.SetOrderSlotState(order, Orders.slotStates.orderFailed.name)
     elseif order.stateName == Orders.slotStates.orderFailed.name or order.stateName == Orders.slotStates.waitingCustomerDepart.name then
         if tick >= order.nextDeadlineTime then
-            Orders.SetOrderSlotToWaitingOrderDecryptionStart(order)
+            Orders.SetOrderSlotState(order, Orders.slotStates.waitingOrderDecryptionStart.name)
         end
     end
 end

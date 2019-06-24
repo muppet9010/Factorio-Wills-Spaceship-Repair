@@ -57,10 +57,10 @@ Orders.slotStates = {
     }
 }
 Orders.timeBonus = {}
-Orders.timeBonus[(60 * 60 * 30)] = {bonusModifier = 1.1, guiColor = {r = 0, g = 255, b = 0, a = 255}}
-Orders.timeBonus[(60 * 60 * 60 * 2)] = {bonusModifier = 1, guiColor = {r = 255, g = 252, b = 0, a = 255}}
-Orders.timeBonus[(60 * 60 * 60 * 4)] = {bonusModifier = 0.9, guiColor = {r = 255, g = 211, b = 0, a = 255}}
-Orders.timeBonus[(60 * 60 * 60 * 6)] = {bonusModifier = 0.8, guiColor = {r = 255, g = 0, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 30)] = {modifierPercent = 10, guiColor = {r = 0, g = 255, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 2)] = {modifierPercent = 0, guiColor = {r = 255, g = 252, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 4)] = {modifierPercent = -10, guiColor = {r = 255, g = 130, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 6)] = {modifierPercent = -20, guiColor = {r = 255, g = 0, b = 0, a = 255}}
 
 Orders.shipParts = {
     ["wills_spaceship_repair-hull_component"] = {
@@ -198,7 +198,7 @@ function Orders.GetOrderGuiState(orderIndex)
     elseif order.stateName == Orders.slotStates.waitingItem.name then
         statusText = {"item-name." .. order.item}
         if order.itemCountNeeded > 1 then
-            statusCountText = " " .. order.itemCountDone .. " / " .. order.itemCountNeeded
+            statusCountText = " (" .. order.itemCountDone .. " / " .. order.itemCountNeeded .. ")"
         end
     end
     return statusText, statusCountText, statusColor
@@ -206,10 +206,16 @@ end
 
 function Orders.GetOrderGuiTime(orderIndex)
     local order = global.Orders.orderSlots[orderIndex]
-    local timeText, timeColor = "", nil
+    local timeText, timeColor, timeBonusText = "", nil, ""
     if order.stateName == Orders.slotStates.waitingItem.name then
+        local timeBonus = Orders.GetOrderTimeBonus(order)
         timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
-        timeColor = Orders.GetOrderTimeBonus(order).guiColor
+        timeColor = timeBonus.guiColor
+        if timeBonus.modifierPercent >= 0 then
+            timeBonusText = tostring(timeBonus.modifierPercent) .. "% bonus"
+        else
+            timeBonusText = tostring(timeBonus.modifierPercent) .. "% penalty"
+        end
     elseif order.stateName == Orders.slotStates.waitingCustomerDepart.name then
         timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
         timeColor = Orders.slotStates.waitingCustomerDepart.color
@@ -217,7 +223,7 @@ function Orders.GetOrderGuiTime(orderIndex)
         timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
         timeColor = Orders.slotStates.orderFailed.color
     end
-    return timeText, timeColor
+    return timeText, timeColor, timeBonusText
 end
 
 function Orders.GetOrderTimeBonus(order)
@@ -330,10 +336,18 @@ function Orders.ShipPartLaunched(shipPartName)
         if order.item == shipPartName and order.itemCountDone < order.itemCountNeeded then
             local timeWaiting = tick - order.startTime
             if timeWaiting >= longestWaitingTime then
+                game.print(tostring(timeWaiting) .. " >= " .. longestWaitingTime)
+                longestWaitingTime = timeWaiting
                 longestWaitingOrder = order
             end
         end
     end
+    if longestWaitingOrder == nil then
+        local localisedShipPartName = game.item_prototypes[shipPartName].localised_name
+        game.print({"message.wills_spaceship_repair-wrong_ship_part_launched", localisedShipPartName}, {r = 1, g = 0, b = 0, a = 1})
+        return
+    end
+
     longestWaitingOrder.itemCountDone = longestWaitingOrder.itemCountDone + 1
     if longestWaitingOrder.itemCountDone < longestWaitingOrder.itemCountNeeded then
         return

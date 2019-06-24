@@ -49,13 +49,21 @@ function Gui.CreateGui(player)
     local guiFlow = GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, true)
 
     local statusFrame = GuiUtil.AddElement({parent = guiFlow, name = "status", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
-    GuiUtil.AddElement({parent = statusFrame, name = "total_debt", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "wages", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "dividends", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "bankruptcy_limit", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "profit", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "workforce_recruited", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusFrame, name = "game_time", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
+    local statusTable = GuiUtil.AddElement({parent = statusFrame, name = "status", type = "table", column_count = 2, draw_horizontal_lines = false, draw_vertical_lines = false}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "total_debt", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "total_debt_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "wages", type = "label", caption = "self", tooltip = "self", style = "muppet_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "wages_value", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "dividends", type = "label", caption = "self", tooltip = "self", style = "muppet_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "dividends_value", type = "label", caption = "", tooltip = "self", style = "muppet_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "profit", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "profit_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
+    GuiUtil.AddElement({parent = statusTable, name = "game_time", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
+    GuiUtil.AddElement({parent = statusTable, name = "game_time_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
 
     Gui.RefreshPlayer(player)
 end
@@ -94,13 +102,13 @@ end
 
 function Gui.UpdateStatusElements(player, guiValues)
     local playerIndex = player.index
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "total_debt", "label", {caption = {"self", guiValues.totalDebt}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "bankruptcy_limit", "label", {caption = {"self", guiValues.bankruptcyLimit}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "dividends", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "wages", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "workforce_recruited", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "game_time", "label", {caption = {"self", guiValues.gameTime}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "profit", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "total_debt_value", "label", {caption = {"self", guiValues.totalDebt}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "bankruptcy_limit_value", "label", {caption = {"self", guiValues.bankruptcyLimit}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "dividends_value", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "wages_value", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "workforce_recruited_value", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "game_time_value", "label", {caption = {"self", guiValues.gameTime}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
 end
 
 function Gui.UpdateOrderSlotElements(player, orderSlotValues)
@@ -109,7 +117,9 @@ function Gui.UpdateOrderSlotElements(player, orderSlotValues)
         if table == nil then
             local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "gui", "flow")
             local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
-            table = GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = true}, true)
+            local ordersScroll = GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "scroll-pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}, false)
+            ordersScroll.style.maximal_height = 400
+            table = GuiUtil.AddElement({parent = ordersScroll, name = "orderSlots", type = "table", column_count = 4, draw_horizontal_lines = true, draw_vertical_lines = true}, true)
         end
         for _, child in pairs(table.children) do
             if child.valid then
@@ -120,6 +130,8 @@ function Gui.UpdateOrderSlotElements(player, orderSlotValues)
             GuiUtil.AddElement({parent = table, name = "order_slot_name_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_slot_name-label", order.index}, style = "muppet_padded_table_cell"}, false)
             local statusElm = GuiUtil.AddElement({parent = table, name = "order_status_" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_status-label", order.status1, order.status2}, style = "muppet_padded_table_cell"}, false)
             statusElm.style.font_color = order.statusColor
+            local bonusElm = GuiUtil.AddElement({parent = table, name = "order_time_bonus" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_time_bonus-label", order.timeBonusText}, style = "muppet_padded_table_cell"}, false)
+            bonusElm.style.font_color = order.timeColor
             local timerElm = GuiUtil.AddElement({parent = table, name = "order_time" .. order.index, type = "label", caption = {"gui-caption.wills_spaceship_repair-order_time-label", order.timeValue}, style = "muppet_padded_table_cell"}, false)
             timerElm.style.font_color = order.timeColor
         end
@@ -130,8 +142,8 @@ function Gui.CalculateOrderSlotTableValues()
     local tableValues = {}
     for _, order in pairs(global.Orders.orderSlots) do
         local orderStatusText, orderStatusCountText, orderStatusColor = Orders.GetOrderGuiState(order.index)
-        local orderTimeText, orderTimeColor = Orders.GetOrderGuiTime(order.index)
-        tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = orderTimeText, timeColor = orderTimeColor}
+        local orderTimeText, orderTimeColor, orderTimeBonus = Orders.GetOrderGuiTime(order.index)
+        tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = orderTimeText, timeColor = orderTimeColor, timeBonusText = orderTimeBonus}
     end
     return tableValues
 end

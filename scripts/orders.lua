@@ -2,7 +2,7 @@ local Orders = {}
 local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
-local Logging = require("utility/logging")
+--local Logging = require("utility/logging")
 local OrderAudit = require("scripts/orderAudit")
 
 --[[
@@ -351,7 +351,7 @@ function Orders.ShipPartLaunched(shipPartName)
     if longestWaitingOrder.itemCountDone < longestWaitingOrder.itemCountNeeded then
         return
     end
-    --TODO - call the investments here
+    --TODO - call the financials here
     Orders.SetOrderSlotState(longestWaitingOrder, Orders.slotStates.waitingCustomerDepart.name)
 end
 

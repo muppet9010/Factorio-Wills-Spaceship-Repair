@@ -71,9 +71,9 @@ function Events.OnSchedulerCycle(event)
         return
     end
     if global.UTILITYSCHEDULEDFUNCTIONS[tick] ~= nil then
-        for eventName, instance in pairs(global.UTILITYSCHEDULEDFUNCTIONS[tick]) do
-            for instanceId, scheduledFunctionData in pairs(instance) do
-                local data = Utils.TableMerge({event, scheduledFunctionData})
+        for eventName, instances in pairs(global.UTILITYSCHEDULEDFUNCTIONS[tick]) do
+            for instanceId, scheduledFunctionData in pairs(instances) do
+                local data = {tick = tick, name = eventName, instanceId = instanceId, data = scheduledFunctionData}
                 if MOD.scheduledEventNames[eventName] ~= nil then
                     MOD.scheduledEventNames[eventName](data)
                 else
@@ -105,7 +105,33 @@ function Events.ScheduleEvent(eventTick, eventName, instanceId, eventData)
     global.UTILITYSCHEDULEDFUNCTIONS[eventTick][eventName][instanceId] = eventData
 end
 
-function Events.RemoveScheduledEvent()
+function Events.RemoveScheduledEvents(targetEventName, targetInstanceId, targetTick)
+    if targetTick == nil then
+        for _, events in pairs(global.UTILITYSCHEDULEDFUNCTIONS) do
+            Events._RemoveScheduledEventsFromTickEntry(events, targetEventName, targetInstanceId)
+        end
+    else
+        local events = global.UTILITYSCHEDULEDFUNCTIONS[targetTick]
+        if events ~= nil then
+            Events._RemoveScheduledEventsFromTickEntry(events, targetEventName, targetInstanceId)
+        end
+    end
+end
+
+function Events._RemoveScheduledEventsFromTickEntry(events, targetEventName, targetInstanceId)
+    for eventName, instances in pairs(events) do
+        if eventName == targetEventName then
+            if targetInstanceId == nil then
+                events[targetEventName] = nil
+            else
+                for instanceId in pairs(instances) do
+                    if instanceId == targetInstanceId then
+                        instances[targetInstanceId] = nil
+                    end
+                end
+            end
+        end
+    end
 end
 
 return Events

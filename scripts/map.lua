@@ -198,7 +198,7 @@ function Map.GenerateEntityRandomPosition(region, entryType)
     }
     local chunksToCheck = Utils.CalculateTilesUnderPositionedBoundingBox(chunkArea)
     local chunksNeeded = {}
-    for _, chunk in pairs(chunksToCheck) do
+    for _, chunk in ipairs(chunksToCheck) do
         if not global.surface.is_chunk_generated(chunk) then
             global.surface.request_to_generate_chunks(Utils.GetLeftTopTilePositionForChunkPosition(chunk), 0)
             local chunkPosString = Utils.FormatPositionTableToString(chunk)
@@ -258,7 +258,7 @@ function Map.MakeEntityAtPosition(region, position, entryType)
 end
 
 function Map.ScheduledMakeSiloAtPosition(event)
-    Map.MakeEntityAtPosition(event.region, event.position, Map.entityTypeDetails["silo"])
+    Map.MakeEntityAtPosition(event.data.region, event.data.position, Map.entityTypeDetails["silo"])
 end
 
 function Map.OnMaybeRocketSiloDiedDestroyed(event)

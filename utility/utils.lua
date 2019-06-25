@@ -539,7 +539,7 @@ function Utils.PadNumberToMinimumDigits(input, requiredLength)
     return input
 end
 
-function Utils.DisplayNumber(number)
+function Utils.DisplayNumberPretty(number)
     local formatted = number
     local k
     while true do

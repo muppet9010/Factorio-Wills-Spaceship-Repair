@@ -39,6 +39,7 @@ end
 
 function OrderAudit.WriteOutTableCommand(commandData)
     game.write_file(Constants.ModName .. "-order_audit_table.json", Utils.TableContentsToJSON(global.Orders.orderAuditTable), false, commandData.player_index)
+    game.print({"message.wills_spaceship_repair-order_audit_table_written", game.get_player(commandData.player_index).name})
 end
 
 return OrderAudit

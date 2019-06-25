@@ -10,7 +10,7 @@ table.insert(rocketSiloTech.effects, {type = "unlock-recipe", recipe = "wills_sp
 table.insert(rocketSiloTech.effects, {type = "unlock-recipe", recipe = "wills_spaceship_repair-wooden_coin_chest_delivery_capsule"})
 table.insert(rocketSiloTech.effects, {type = "unlock-recipe", recipe = "wills_spaceship_repair-iron_coin_chest_delivery_capsule"})
 table.insert(rocketSiloTech.effects, {type = "unlock-recipe", recipe = "wills_spaceship_repair-steel_coin_chest_delivery_capsule"})
-for i, effect in pairs(rocketSiloTech.effects) do
+for i, effect in ipairs(rocketSiloTech.effects) do
     if effect.type == "unlock-recipe" and effect.recipe == "rocket-silo" then
         table.remove(rocketSiloTech.effects, i)
         break

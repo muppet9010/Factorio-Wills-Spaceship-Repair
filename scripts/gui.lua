@@ -29,7 +29,7 @@ function Gui.OnPlayerJoinedGame(event)
 end
 
 function Gui.GuiRecreateAll()
-    for _, player in pairs(game.connected_players) do
+    for _, player in ipairs(game.connected_players) do
         Gui.GuiRecreate(player)
     end
 end
@@ -78,7 +78,7 @@ end
 function Gui.RefreshAll()
     local guiValues = Gui.CalculateStatusElementValues()
     local orderSlotValues = Gui.CalculateOrderSlotTableValues()
-    for _, player in pairs(game.connected_players) do
+    for _, player in ipairs(game.connected_players) do
         Gui.UpdateStatusElements(player, guiValues)
         Gui.UpdateOrderSlotElements(player, orderSlotValues)
     end
@@ -86,17 +86,17 @@ end
 
 function Gui.CalculateStatusElementValues()
     local guiValues = {}
-    guiValues.totalDebt = Utils.DisplayNumber((global.Financials.wagesTotal - global.Financials.wagesPaid) + (global.Financials.dividendsTotal - global.Financials.dividendsPaid))
-    guiValues.bankruptcyLimit = Utils.DisplayNumber(global.Financials.bankruptcyLimit)
-    guiValues.dividendsPaid = Utils.DisplayNumber(global.Financials.dividendsPaid)
-    guiValues.dividendsTotal = Utils.DisplayNumber(global.Financials.dividendsTotal)
-    guiValues.wagesPaid = Utils.DisplayNumber(global.Financials.wagesPaid)
-    guiValues.wagesTotal = Utils.DisplayNumber(global.Financials.wagesTotal)
+    guiValues.totalDebt = Utils.DisplayNumberPretty((global.Financials.wagesTotal - global.Financials.wagesPaid) + (global.Investments.dividendsTotal - global.Investments.dividendsPaid))
+    guiValues.bankruptcyLimit = Utils.DisplayNumberPretty(global.Financials.bankruptcyLimit)
+    guiValues.dividendsPaid = Utils.DisplayNumberPretty(global.Investments.dividendsPaid)
+    guiValues.dividendsTotal = Utils.DisplayNumberPretty(global.Investments.dividendsTotal)
+    guiValues.wagesPaid = Utils.DisplayNumberPretty(global.Financials.wagesPaid)
+    guiValues.wagesTotal = Utils.DisplayNumberPretty(global.Financials.wagesTotal)
     guiValues.currentWorkforce = #game.connected_players - 1
     guiValues.maxWorkforce = global.recruitedWorkforceCount
     guiValues.gameTime = Utils.DisplayTimeOfTicks(game.tick, "hour", "second")
-    guiValues.profitMade = Utils.DisplayNumber(global.Financials.profitMade)
-    guiValues.profitTarget = Utils.DisplayNumber(global.Financials.profitTarget)
+    guiValues.profitMade = Utils.DisplayNumberPretty(global.Financials.profitMade)
+    guiValues.profitTarget = Utils.DisplayNumberPretty(global.Financials.profitTarget)
     return guiValues
 end
 
@@ -121,7 +121,7 @@ function Gui.UpdateOrderSlotElements(player, orderSlotValues)
             ordersScroll.style.maximal_height = 400
             table = GuiUtil.AddElement({parent = ordersScroll, name = "orderSlots", type = "table", column_count = 4, draw_horizontal_lines = true, draw_vertical_lines = false, style = "muppet_padded_table_cells"}, true)
         end
-        for _, child in pairs(table.children) do
+        for _, child in ipairs(table.children) do
             if child.valid then
                 child.destroy()
             end

@@ -336,7 +336,6 @@ function Orders.ShipPartLaunched(shipPartName)
         if order.item == shipPartName and order.itemCountDone < order.itemCountNeeded then
             local timeWaiting = tick - order.startTime
             if timeWaiting >= longestWaitingTime then
-                game.print(tostring(timeWaiting) .. " >= " .. longestWaitingTime)
                 longestWaitingTime = timeWaiting
                 longestWaitingOrder = order
             end

@@ -16,6 +16,7 @@ end
 function Gui.OnLoad()
     Events.RegisterHandler(defines.events.on_player_joined_game, "Gui", Gui.OnPlayerJoinedGame)
     Events.RegisterScheduledEventType("Gui.OnSecondUpdate", Gui.OnSecondUpdate)
+    Events.RegisterHandler(defines.events.on_lua_shortcut, "Gui", Gui.OnLuaShortcut)
 end
 
 function Gui.OnSecondUpdate(event)
@@ -35,19 +36,18 @@ function Gui.GuiRecreateAll()
 end
 
 function Gui.GuiRecreate(player)
-    Gui.DestroyGui(player)
-    Gui.CreateGui(player)
+    Gui.DestroyAllGuis(player)
+    GuiUtil.CreatePlayersElementReferenceStorage(player.index)
+    GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, true)
+    Gui.CreateStatusGui(player)
 end
 
-function Gui.DestroyGui(player)
+function Gui.DestroyAllGuis(player)
     GuiUtil.DestroyPlayersReferenceStorage(player.index)
 end
 
-function Gui.CreateGui(player)
-    GuiUtil.CreatePlayersElementReferenceStorage(player.index)
-
-    local guiFlow = GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, true)
-
+function Gui.CreateStatusGui(player)
+    local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "gui", "flow")
     local statusFrame = GuiUtil.AddElement({parent = guiFlow, name = "status", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
     local statusTable = GuiUtil.AddElement({parent = statusFrame, name = "status", type = "table", column_count = 2, draw_horizontal_lines = false, draw_vertical_lines = false}, false)
     GuiUtil.AddElement({parent = statusTable, name = "total_debt", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
@@ -111,6 +111,7 @@ function Gui.UpdateStatusElements(player, guiValues)
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
 end
 
+--TODO: need to stop this recreation as its the main cause of UPS
 function Gui.UpdateOrderSlotElements(player, orderSlotValues)
     if #orderSlotValues > 0 then
         local table = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "orderSlots", "table")
@@ -118,7 +119,7 @@ function Gui.UpdateOrderSlotElements(player, orderSlotValues)
             local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "gui", "flow")
             local ordersFrame = GuiUtil.AddElement({parent = guiFlow, name = "orderSlots", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
             local ordersScroll = GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "scroll-pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"}, false)
-            ordersScroll.style.maximal_height = 400
+            ordersScroll.style.maximal_height = 300
             table = GuiUtil.AddElement({parent = ordersScroll, name = "orderSlots", type = "table", column_count = 4, draw_horizontal_lines = true, draw_vertical_lines = false, style = "muppet_padded_table_cells"}, true)
         end
         for _, child in ipairs(table.children) do
@@ -146,6 +147,34 @@ function Gui.CalculateOrderSlotTableValues()
         tableValues[order.index] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = orderTimeText, timeColor = orderTimeColor, timeBonusText = orderTimeBonus}
     end
     return tableValues
+end
+
+function Gui.OnLuaShortcut(event)
+    local shortcutName = event.prototype_name
+    if shortcutName ~= "wills_spaceship_repair-investments_gui_button" then
+        return
+    end
+    local player = game.get_player(event.player_index)
+    Gui.ToggleInvestmentsGui(player)
+end
+
+function Gui.ToggleInvestmentsGui(player)
+    if GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "investment", "frame") ~= nil then
+        Gui.DestroyInvestmentsGui(player)
+    else
+        Gui.CreateInvestmentsGui(player)
+    end
+end
+
+function Gui.DestroyInvestmentsGui(player)
+    GuiUtil.DestroyElementInPlayersReferenceStorage(player.index, "investment", "frame")
+end
+
+function Gui.CreateInvestmentsGui(player)
+    local investmentFrame = GuiUtil.AddElement({parent = player.gui.center, name = "investment", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, true)
+    investmentFrame.style.maximal_width = 1400
+    investmentFrame.style.maximal_height = 800
+    GuiUtil.AddElement({parent = investmentFrame, name = "investment_title", type = "label", style = "muppet_large_bold_text", caption = "self"}, false)
 end
 
 return Gui

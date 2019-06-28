@@ -94,8 +94,7 @@ function Events.ScheduleEvent(eventTick, eventName, instanceId, eventData)
     if eventTick == nil or eventTick <= nowTick then
         eventTick = nowTick + 1
     end
-    --TODO: change from being forced to be a string
-    instanceId = tostring(instanceId)
+    instanceId = instanceId or ""
     eventData = eventData or {}
     global.UTILITYSCHEDULEDFUNCTIONS = global.UTILITYSCHEDULEDFUNCTIONS or {}
     global.UTILITYSCHEDULEDFUNCTIONS[eventTick] = global.UTILITYSCHEDULEDFUNCTIONS[eventTick] or {}

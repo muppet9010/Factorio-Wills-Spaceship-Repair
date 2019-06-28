@@ -214,7 +214,7 @@ function Gui.AddOrderSlotRow(order, table)
 end
 
 function Gui.UpdateOrderSlotRow(scheduledEvent)
-    local orderIndex = tonumber(scheduledEvent.instanceId)
+    local orderIndex = scheduledEvent.instanceId
     Events.ScheduleEvent(scheduledEvent.tick + 3600, "Gui.UpdateOrderSlotRow", orderIndex)
     local orderSlotValues = Gui.CalculateOrderSlotTableValues(orderIndex)
     local guiIndex = global.Gui.orderGuiIndexMapping[orderSlotValues.index]

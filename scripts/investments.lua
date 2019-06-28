@@ -138,7 +138,7 @@ end
 function Investments.AddInterest(event)
     Logging.Log(serpent.block(event))
     local tick = event.tick
-    local investmentIndex = tonumber(event.instanceId)
+    local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
     local interest = investment.owed * global.Investments.hourlyInterestRate
     investment.interestAcquired = investment.interestAcquired + interest

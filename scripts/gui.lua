@@ -6,10 +6,11 @@ local Orders = require("scripts/orders")
 local Logging = require("utility/logging")
 
 function Gui.OnStartup()
+    global.Gui = global.Gui or {}
+    global.Gui.orderGuiIndexMapping = global.Gui.orderGuiIndexMapping or {}
     GuiUtil.CreateAllPlayersElementReferenceStorage()
     Gui.GuiRecreateAll()
     Events.ScheduleEvent(60, "Gui.OnSecondUpdate")
-    Events.ScheduleEvent(3600, "Gui.OnMinuteUpdate")
 
     Gui.OnLoad()
 end
@@ -17,20 +18,15 @@ end
 function Gui.OnLoad()
     Events.RegisterHandler(defines.events.on_player_joined_game, "Gui", Gui.OnPlayerJoinedGame)
     Events.RegisterScheduledEventType("Gui.OnSecondUpdate", Gui.OnSecondUpdate)
-    Events.RegisterScheduledEventType("Gui.OnMinuteUpdate", Gui.OnMinuteUpdate)
     Events.RegisterHandler(defines.events.on_lua_shortcut, "Gui", Gui.OnLuaShortcut)
     Events.RegisterHandler("Orders.OrderSlotAdded", "Gui.OnOrderSlotAdded", Gui.OnOrderSlotAdded)
     Events.RegisterHandler("Orders.OrderSlotUpdated", "Gui.OnOrderSlotUpdated", Gui.RefreshOrdersAll)
+    Events.RegisterScheduledEventType("Gui.UpdateOrderSlotRow", Gui.UpdateOrderSlotRow)
 end
 
 function Gui.OnSecondUpdate(event)
     Events.ScheduleEvent(event.tick + 60, "Gui.OnSecondUpdate")
     Gui.RefreshStatusAll()
-end
-
-function Gui.OnMinuteUpdate(event)
-    Events.ScheduleEvent(event.tick + 3600, "Gui.OnMinuteUpdate")
-    Gui.RefreshOrdersAll()
 end
 
 function Gui.OnPlayerJoinedGame(event)
@@ -118,46 +114,64 @@ function Gui.UpdateStatusElements(player, guiValues)
 end
 
 function Gui.RefreshOrdersPlayer(player)
-    local orderSlotValues = Gui.CalculateOrderSlotTableValues()
-    Gui.UpdateOrderSlotElements(player, orderSlotValues)
+    local orderSlotValues = Gui.CalculateAllOrderSlotTableValues()
+    Gui.UpdateAllOrderSlotElements(player, orderSlotValues)
 end
 
 function Gui.RefreshOrdersAll()
-    local orderSlotValues = Gui.CalculateOrderSlotTableValues()
+    local orderSlotValues = Gui.CalculateAllOrderSlotTableValues()
     for _, player in ipairs(game.connected_players) do
-        Gui.UpdateOrderSlotElements(player, orderSlotValues)
+        Gui.UpdateAllOrderSlotElements(player, orderSlotValues)
     end
 end
 
-function Gui.UpdateOrderSlotElements(player, orderSlotValues)
-    if #orderSlotValues > 0 then
-        for i, order in pairs(orderSlotValues) do
-            local orderStatusElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_status_" .. i, "label")
-            orderStatusElm.caption = {"gui-caption.wills_spaceship_repair-order_status-label", order.status1, order.status2}
-            orderStatusElm.style.font_color = order.statusColor
-            local bonusElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_time_bonus" .. i, "label")
-            bonusElm.caption = order.timeBonusText
-            bonusElm.style.font_color = order.timeColor
-            local timerElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_time" .. i, "label")
-            timerElm.caption = order.timeValue
-            timerElm.style.font_color = order.timeColor
+function Gui.UpdateAllOrderSlotElements(player, orderSlotsValues)
+    if #orderSlotsValues > 0 then
+        for i, orderSlotValues in pairs(orderSlotsValues) do
+            Gui.UpdateOrderSlotElements(player, orderSlotValues, i)
         end
     end
+    Events.RemoveScheduledEvents("Gui.UpdateOrderSlotRow")
+    local tick = game.tick
+    for _, order in pairs(global.Orders.orderSlots) do
+        local timeWaiting = tick - order.startTime
+        local lastUpdateWaitingTick = math.floor(timeWaiting / 3600) * 3600
+        local nextUpdateTick = order.startTime + lastUpdateWaitingTick + 3600
+        Events.ScheduleEvent(nextUpdateTick, "Gui.UpdateOrderSlotRow", order.index)
+    end
 end
 
-function Gui.CalculateOrderSlotTableValues()
-    local tableValues = {}
+function Gui.UpdateOrderSlotElements(player, orderSlotValues, guiIndex)
+    local orderStatusElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_status_" .. guiIndex, "label")
+    orderStatusElm.caption = {"gui-caption.wills_spaceship_repair-order_status-label", orderSlotValues.status1, orderSlotValues.status2}
+    orderStatusElm.style.font_color = orderSlotValues.statusColor
+    local bonusElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_time_bonus" .. guiIndex, "label")
+    bonusElm.caption = orderSlotValues.timeBonusText
+    bonusElm.style.font_color = orderSlotValues.timeColor
+    local timerElm = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "order_time" .. guiIndex, "label")
+    timerElm.caption = orderSlotValues.timeValue
+    timerElm.style.font_color = orderSlotValues.timeColor
+    global.Gui.orderGuiIndexMapping[orderSlotValues.index] = guiIndex
+end
+
+function Gui.CalculateAllOrderSlotTableValues()
     local sortedOrders = {}
     for _, order in pairs(global.Orders.orderSlots) do
         table.insert(sortedOrders, order)
     end
     table.sort(sortedOrders, Orders.OrdersIndexSortedByDueTime)
+    local tableValues = {}
     for i, order in pairs(sortedOrders) do
-        local orderStatusText, orderStatusCountText, orderStatusColor = Orders.GetOrderGuiState(order.index)
-        local orderTimeTicks, orderTimeColor, orderTimeBonus = Orders.GetOrderGuiTime(order.index)
-        tableValues[i] = {index = order.index, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = Utils.DisplayTimeOfTicks(orderTimeTicks, "hour", "minute"), timeColor = orderTimeColor, timeBonusText = orderTimeBonus}
+        tableValues[i] = Gui.CalculateOrderSlotTableValues(order.index)
     end
     return tableValues
+end
+
+function Gui.CalculateOrderSlotTableValues(orderIndex)
+    local orderStatusText, orderStatusCountText, orderStatusColor = Orders.GetOrderGuiState(orderIndex)
+    local orderTimeTicks, orderTimeColor, orderTimeBonus = Orders.GetOrderGuiTime(orderIndex)
+    local slotValues = {index = orderIndex, status1 = orderStatusText, status2 = orderStatusCountText, statusColor = orderStatusColor, timeValue = Utils.DisplayTimeOfTicks(orderTimeTicks, "hour", "minute"), timeColor = orderTimeColor, timeBonusText = orderTimeBonus}
+    return slotValues
 end
 
 function Gui.OnOrderSlotAdded(event)
@@ -197,6 +211,16 @@ function Gui.AddOrderSlotRow(order, table)
     GuiUtil.AddElement({parent = table, name = "order_status_" .. order.index, type = "label", caption = "", style = "muppet_bold_text"}, true)
     GuiUtil.AddElement({parent = table, name = "order_time_bonus" .. order.index, type = "label", caption = "", style = "muppet_bold_text"}, true)
     GuiUtil.AddElement({parent = table, name = "order_time" .. order.index, type = "label", caption = "", style = "muppet_bold_text"}, true)
+end
+
+function Gui.UpdateOrderSlotRow(scheduledEvent)
+    local orderIndex = tonumber(scheduledEvent.instanceId)
+    Events.ScheduleEvent(scheduledEvent.tick + 3600, "Gui.UpdateOrderSlotRow", orderIndex)
+    local orderSlotValues = Gui.CalculateOrderSlotTableValues(orderIndex)
+    local guiIndex = global.Gui.orderGuiIndexMapping[orderSlotValues.index]
+    for _, player in ipairs(game.connected_players) do
+        Gui.UpdateOrderSlotElements(player, orderSlotValues, guiIndex)
+    end
 end
 
 function Gui.OnLuaShortcut(event)

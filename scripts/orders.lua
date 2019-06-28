@@ -14,7 +14,7 @@ local OrderAudit = require("scripts/orderAudit")
             itemCountNeeded = 3 -- the number of this item type needed or nil
             itemCountDone = 1 -- the number of this item type supplied or nil
             startTime = GAMETICK -- when the order was first decrypted or nil
-            nextDeadlineTime = GAMETICK -- when the order's bonus rate next changes or nil
+            deadlineTime = GAMETICK -- when the order's bonus rate next changes or nil
         }
     }
 
@@ -46,7 +46,7 @@ Orders.slotStates = {
     },
     waitingItem = {
         name = "waitingItem",
-        timer = nil,
+        timer = (60 * 60 * 60 * 6),
         color = {r = 255, g = 255, b = 255, a = 255},
         sortValue = 5
     },
@@ -219,7 +219,7 @@ function Orders.GetOrderGuiTime(orderIndex)
     local timeTicks, timeColor, timeBonusText = nil, nil, ""
     if order.stateName == Orders.slotStates.waitingItem.name then
         local timeBonus = Orders.GetOrderTimeBonus(order)
-        timeTicks = order.nextDeadlineTime - game.tick
+        timeTicks = order.deadlineTime - game.tick
         timeColor = timeBonus.guiColor
         if timeBonus.modifierPercent >= 0 then
             timeBonusText = "+" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
@@ -227,17 +227,17 @@ function Orders.GetOrderGuiTime(orderIndex)
             timeBonusText = "-" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
         end
     elseif order.stateName == Orders.slotStates.waitingCustomerDepart.name then
-        timeTicks = order.nextDeadlineTime - game.tick
+        timeTicks = order.deadlineTime - game.tick
         timeColor = Orders.slotStates.waitingCustomerDepart.color
     elseif order.stateName == Orders.slotStates.orderFailed.name then
-        timeTicks = order.nextDeadlineTime - game.tick
+        timeTicks = order.deadlineTime - game.tick
         timeColor = Orders.slotStates.orderFailed.color
     end
     return timeTicks, timeColor, timeBonusText
 end
 
 function Orders.GetOrderTimeBonus(order)
-    local waitingTicks = order.nextDeadlineTime - order.startTime
+    local waitingTicks = game.tick - order.startTime
     for delayTick, timeBonus in pairs(Orders.timeBonus) do
         if waitingTicks <= delayTick then
             return timeBonus
@@ -291,13 +291,13 @@ end
 function Orders.AddOrderSlot(stateName)
     local slotIndex = #global.Orders.orderSlots + 1
     local order = {index = slotIndex}
-    Orders.SetOrderSlotState(order, stateName)
+    Orders.SetOrderSlotState(order, stateName, false)
     global.Orders.orderSlots[slotIndex] = order
     Events.RaiseEvent({name = "Orders.OrderSlotAdded", orderSlotIndex = slotIndex})
     return order
 end
 
-function Orders.SetOrderSlotState(order, stateName)
+function Orders.SetOrderSlotState(order, stateName, skipRaiseEvent)
     local tick = game.tick
     order.stateName = stateName
     order.item = nil
@@ -305,9 +305,9 @@ function Orders.SetOrderSlotState(order, stateName)
     order.itemCountDone = nil
     order.startTime = tick
     if Orders.slotStates[stateName].timer ~= nil then
-        order.nextDeadlineTime = tick + Orders.slotStates[stateName].timer
+        order.deadlineTime = tick + Orders.slotStates[stateName].timer
     else
-        order.nextDeadlineTime = nil
+        order.deadlineTime = nil
     end
     if stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
         global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
@@ -315,7 +315,9 @@ function Orders.SetOrderSlotState(order, stateName)
     elseif stateName == Orders.slotStates.waitingItem.name then
         Orders.GenerateOrderInSlot(order)
     end
-    Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = order.index})
+    if skipRaiseEvent == nil or skipRaiseEvent == true then
+        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = order.index})
+    end
     OrderAudit.LogUpdateOrder(order)
 end
 
@@ -385,7 +387,7 @@ function Orders.UpdateAllOrdersSlotDeadlineTimes(event)
     local tick = event.tick
     Events.ScheduleEvent(tick + 60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
     for _, order in pairs(global.Orders.orderSlots) do
-        if order.nextDeadlineTime ~= nil and tick >= order.nextDeadlineTime then
+        if order.deadlineTime ~= nil then
             Orders.UpdateOrderSlotDeadlineTimes(order, tick)
         end
     end
@@ -393,16 +395,11 @@ end
 
 function Orders.UpdateOrderSlotDeadlineTimes(order, tick)
     if order.stateName == Orders.slotStates.waitingItem.name then
-        local waitingTicks = tick - order.startTime
-        for delayTick in pairs(Orders.timeBonus) do
-            if waitingTicks <= delayTick then
-                order.nextDeadlineTime = order.startTime + delayTick
-                return
-            end
+        if tick >= order.deadlineTime then
+            Orders.SetOrderSlotState(order, Orders.slotStates.orderFailed.name)
         end
-        Orders.SetOrderSlotState(order, Orders.slotStates.orderFailed.name)
     elseif order.stateName == Orders.slotStates.orderFailed.name or order.stateName == Orders.slotStates.waitingCustomerDepart.name then
-        if tick >= order.nextDeadlineTime then
+        if tick >= order.deadlineTime then
             Orders.SetOrderSlotState(order, Orders.slotStates.waitingOrderDecryptionStart.name)
         end
     end

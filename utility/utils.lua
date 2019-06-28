@@ -552,6 +552,9 @@ function Utils.DisplayNumberPretty(number)
 end
 
 function Utils.DisplayTimeOfTicks(inputTicks, displayLargestTimeUnit, displaySmallestTimeUnit)
+    if inputTicks == nil then
+        return ""
+    end
     local negativeSign = ""
     if inputTicks < 0 then
         negativeSign = "-"

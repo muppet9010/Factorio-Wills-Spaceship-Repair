@@ -2,7 +2,7 @@ local Orders = {}
 local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
---local Logging = require("utility/logging")
+local Logging = require("utility/logging")
 local OrderAudit = require("scripts/orderAudit")
 
 --[[
@@ -23,37 +23,44 @@ Orders.slotStates = {
     waitingCapacityTech = {
         name = "waitingCapacityTech",
         timer = nil,
-        color = nil
+        color = {r = 255, g = 255, b = 255, a = 255},
+        sortValue = 1
     },
     waitingDrydock = {
         name = "waitingDrydock",
         timer = nil,
-        color = nil
+        color = {r = 255, g = 255, b = 255, a = 255},
+        sortValue = 2
     },
     waitingOrderDecryptionStart = {
         name = "waitingOrderDecryptionStart",
         timer = nil,
-        color = nil
+        color = {r = 255, g = 255, b = 255, a = 255},
+        sortValue = 3
     },
     waitingOrderDecryptionEnd = {
         name = "waitingOrderDecryptionEnd",
         timer = nil,
-        color = nil
+        color = {r = 255, g = 255, b = 255, a = 255},
+        sortValue = 4
     },
     waitingItem = {
         name = "waitingItem",
         timer = nil,
-        color = nil
+        color = {r = 255, g = 255, b = 255, a = 255},
+        sortValue = 5
     },
     waitingCustomerDepart = {
         name = "waitingCustomerDepart",
         timer = (60 * 60 * 1),
-        color = {r = 0, g = 255, b = 0, a = 255}
+        color = {r = 0, g = 255, b = 0, a = 255},
+        sortValue = 0
     },
     orderFailed = {
         name = "orderFailed",
         timer = (60 * 60 * 5),
-        color = {r = 255, g = 0, b = 0, a = 255}
+        color = {r = 255, g = 0, b = 0, a = 255},
+        sortValue = -1
     }
 }
 Orders.timeBonus = {}
@@ -156,6 +163,9 @@ function Orders.OnLoad()
     Events.RegisterHandler(defines.events.on_rocket_launched, "Orders", Orders.OnRocketLaunched)
     Events.RegisterHandler(defines.events.on_research_started, "Orders", Orders.OnResearchStarted)
     Events.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
+    Events.RegisterEvent("Orders.OrderSlotAdded")
+    Events.RegisterEvent("Orders.OrderSlotUpdated")
+
     OrderAudit.OnLoad(Orders.slotStates)
 end
 
@@ -196,7 +206,7 @@ function Orders.GetOrderGuiState(orderIndex)
      then
         statusText = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.stateName}
     elseif order.stateName == Orders.slotStates.waitingItem.name then
-        statusText = {"item-name." .. order.item}
+        statusText = {"item-name-short." .. order.item}
         if order.itemCountNeeded > 1 then
             statusCountText = " (" .. order.itemCountDone .. " / " .. order.itemCountNeeded .. ")"
         end
@@ -206,24 +216,24 @@ end
 
 function Orders.GetOrderGuiTime(orderIndex)
     local order = global.Orders.orderSlots[orderIndex]
-    local timeText, timeColor, timeBonusText = "", nil, ""
+    local timeTicks, timeColor, timeBonusText = nil, nil, ""
     if order.stateName == Orders.slotStates.waitingItem.name then
         local timeBonus = Orders.GetOrderTimeBonus(order)
-        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
+        timeTicks = order.nextDeadlineTime - game.tick
         timeColor = timeBonus.guiColor
         if timeBonus.modifierPercent >= 0 then
-            timeBonusText = tostring(timeBonus.modifierPercent) .. "% bonus"
+            timeBonusText = "+" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
         else
-            timeBonusText = tostring(timeBonus.modifierPercent) .. "% penalty"
+            timeBonusText = "-" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
         end
     elseif order.stateName == Orders.slotStates.waitingCustomerDepart.name then
-        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "minute", "second")
+        timeTicks = order.nextDeadlineTime - game.tick
         timeColor = Orders.slotStates.waitingCustomerDepart.color
     elseif order.stateName == Orders.slotStates.orderFailed.name then
-        timeText = Utils.DisplayTimeOfTicks((order.nextDeadlineTime - game.tick), "hour", "second")
+        timeTicks = order.nextDeadlineTime - game.tick
         timeColor = Orders.slotStates.orderFailed.color
     end
-    return timeText, timeColor, timeBonusText
+    return timeTicks, timeColor, timeBonusText
 end
 
 function Orders.GetOrderTimeBonus(order)
@@ -283,6 +293,7 @@ function Orders.AddOrderSlot(stateName)
     local order = {index = slotIndex}
     Orders.SetOrderSlotState(order, stateName)
     global.Orders.orderSlots[slotIndex] = order
+    Events.RaiseEvent({name = "Orders.OrderSlotAdded", orderSlotIndex = slotIndex})
     return order
 end
 
@@ -304,6 +315,7 @@ function Orders.SetOrderSlotState(order, stateName)
     elseif stateName == Orders.slotStates.waitingItem.name then
         Orders.GenerateOrderInSlot(order)
     end
+    Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = order.index})
     OrderAudit.LogUpdateOrder(order)
 end
 
@@ -393,6 +405,19 @@ function Orders.UpdateOrderSlotDeadlineTimes(order, tick)
         if tick >= order.nextDeadlineTime then
             Orders.SetOrderSlotState(order, Orders.slotStates.waitingOrderDecryptionStart.name)
         end
+    end
+end
+
+function Orders.OrdersIndexSortedByDueTime(orderA, orderB)
+    if Orders.slotStates[orderA.stateName].sortValue > Orders.slotStates[orderB.stateName].sortValue then
+        return true
+    elseif Orders.slotStates[orderA.stateName].sortValue < Orders.slotStates[orderB.stateName].sortValue then
+        return false
+    end
+    if orderA.startTime < orderB.startTime then
+        return true
+    else
+        return false
     end
 end
 

@@ -259,12 +259,20 @@ end
 function Orders.OrderDecryptionResearchCompleted()
     game.print({"message.wills_spaceship_repair-order_decryption_completed"}, {r = 0, g = 1, b = 0, a = 1})
     local decryptionAllowed = 0
+    local orderDecrypted = false
     for _, orderSlot in pairs(global.Orders.orderSlots) do
         if orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionEnd.name then
             Orders.SetOrderSlotState(orderSlot, Orders.slotStates.waitingItem.name)
+            orderDecrypted = true
         elseif orderSlot.stateName == Orders.slotStates.waitingOrderDecryptionStart.name then
             decryptionAllowed = decryptionAllowed + 1
         end
+    end
+    if not orderDecrypted then
+        --Editor in use so fake that the research started before being completed
+        Orders.OnResearchStarted({research = {name = "wills_spaceship_repair-order_decryption-1"}})
+        Orders.OrderDecryptionResearchCompleted()
+        return
     end
     local researchQueue = global.playerForce.research_queue
     local queueStartPoint = 1

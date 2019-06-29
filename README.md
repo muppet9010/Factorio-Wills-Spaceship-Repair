@@ -19,3 +19,8 @@ Credits
 -----
 Many graphics and recipes copied/inspired from Space Extension Mod (SpaceX) under its MIT licence.
 Colored assembling machine graphics from Bobs Assembling Machines with permission.
+
+
+Testing Notes
+------
+The mod may not test correctly with Creative Mode and this mod isn't supported.

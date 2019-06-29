@@ -65,7 +65,7 @@ Orders.slotStates = {
 }
 Orders.timeBonus = {}
 Orders.timeBonus[(60 * 60 * 30)] = {modifierPercent = 10, guiColor = {r = 0, g = 255, b = 0, a = 255}}
-Orders.timeBonus[(60 * 60 * 60 * 2)] = {modifierPercent = 0, guiColor = {r = 255, g = 252, b = 0, a = 255}}
+Orders.timeBonus[(60 * 60 * 60 * 2)] = {modifierPercent = 0, guiColor = {r = 255, g = 255, b = 0, a = 255}}
 Orders.timeBonus[(60 * 60 * 60 * 4)] = {modifierPercent = -10, guiColor = {r = 255, g = 130, b = 0, a = 255}}
 Orders.timeBonus[(60 * 60 * 60 * 6)] = {modifierPercent = -20, guiColor = {r = 255, g = 0, b = 0, a = 255}}
 

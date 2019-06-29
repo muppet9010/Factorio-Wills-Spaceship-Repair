@@ -12,7 +12,9 @@ Designed for play in multiplayer as a streamer with viewers acting as investors.
 Commands
 ------
 
-- wills_spaceship_repair-write_order_data = Writes out details on all orders processed during the mods usage.
+- wills_spaceship_repair-add_investment = Add a new Investment using the command arguments: "Player Name" InvestmentAmount
+- wills_spaceship_repair-write_order_data = Writes out details of all orders to the that players script-output folder.
+- wills_spaceship_repair-write_investment_data = Writes out details of investments to the that players script-output folder.
 
 
 Credits

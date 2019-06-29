@@ -1,4 +1,5 @@
 local defaultStyle = data.raw["gui-style"]["default"]
+local guiHeadingColor = {255, 230, 192}
 
 defaultStyle.muppet_padded_horizontal_flow = {
     type = "horizontal_flow_style",
@@ -84,6 +85,19 @@ defaultStyle.muppet_bold_text = {
     font = "default-bold"
 }
 
+defaultStyle.muppet_medium_text = {
+    type = "label_style",
+    font = "default-medium"
+}
+defaultStyle.muppet_medium_semibold_text = {
+    type = "label_style",
+    font = "default-medium-semibold"
+}
+defaultStyle.muppet_medium_bold_text = {
+    type = "label_style",
+    font = "default-medium-bold"
+}
+
 defaultStyle.muppet_large_text = {
     type = "label_style",
     font = "default-large"
@@ -96,3 +110,36 @@ defaultStyle.muppet_large_bold_text = {
     type = "label_style",
     font = "default-large-bold"
 }
+
+local textsToMakeHeadings = {"muppet_medium_text", "muppet_medium_semibold_text", "muppet_bold_text", "muppet_medium_text", "muppet_medium_semibold_text", "muppet_medium_bold_text", "muppet_large_text", "muppet_large_semibold_text", "muppet_large_bold_text"}
+for _, textName in pairs(textsToMakeHeadings) do
+    local headingName = string.gsub(textName, "_text", "_heading")
+    defaultStyle[headingName] = {
+        type = "label_style",
+        parent = textName,
+        font_color = guiHeadingColor
+    }
+end
+
+data:extend(
+    {
+        {
+            type = "font",
+            name = "default-medium",
+            from = "default",
+            size = 16
+        },
+        {
+            type = "font",
+            name = "default-medium-semibold",
+            from = "default-semibold",
+            size = 16
+        },
+        {
+            type = "font",
+            name = "default-medium-bold",
+            from = "default-bold",
+            size = 16
+        }
+    }
+)

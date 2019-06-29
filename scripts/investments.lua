@@ -2,6 +2,8 @@ local Investments = {}
 local Commands = require("utility/commands")
 local Events = require("utility/events")
 local Logging = require("utility/logging")
+local Constants = require("constants")
+local Utils = require("utility/utils")
 
 --[[
     global.Investments.investmentsTable = {
@@ -38,6 +40,7 @@ function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-add_investment", {"api-description.wills_spaceship_repair-add_investment"}, Investments.AddInvestmentCommand, true)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Investments", Investments.UpdateSetting)
     Events.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
+    Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
 end
 
 function Investments.UpdateSetting(settingName)
@@ -48,7 +51,7 @@ function Investments.UpdateSetting(settingName)
         global.Investments.cashMultiplyer = tonumber(settings.global["wills_spaceship_repair-investment_cash_multiplyer"].value)
     end
     if settingName == "wills_spaceship_repair-investment_maturity_minutes" or settingName == nil then
-        global.Investments.maturityTicks = tonumber(settings.global["wills_spaceship_repair-investment_maturity_minutes"].value) * 60 --TODO: removed a *60 to test
+        global.Investments.maturityTicks = tonumber(settings.global["wills_spaceship_repair-investment_maturity_minutes"].value) * 60 * 60
     end
     if settingName == "wills_spaceship_repair-matured_investment_dividend_hourly_interest" or settingName == nil then
         global.Investments.hourlyInterestRate = tonumber(settings.global["wills_spaceship_repair-matured_investment_dividend_hourly_interest"].value) / 100
@@ -99,7 +102,6 @@ function Investments.AddInvestmentCommand(command)
     Logging.Log(serpent.block(global.Investments.investmentsTable))
 end
 
---TODO: not tested yet
 function Investments.PayInvestors(amount)
     local outstandingInvestments = {}
     for _, investment in ipairs(global.Investments.investmentsTable) do
@@ -136,7 +138,6 @@ function Investments.InvestorsIndexSortedByMaturityTime(a, b)
 end
 
 function Investments.AddInterest(event)
-    Logging.Log(serpent.block(event))
     local tick = event.tick
     local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
@@ -144,7 +145,12 @@ function Investments.AddInterest(event)
     investment.interestAcquired = investment.interestAcquired + interest
     investment.owed = investment.owed + interest
     Events.ScheduleEvent(tick + hourTicks, "Investments.AddInterest", investmentIndex)
-    Logging.Log(serpent.block(global.Investments.investmentsTable))
+end
+
+function Investments.WriteOutTableCommand(commandData)
+    local player = game.get_player(commandData.player_index)
+    game.write_file(Constants.ModName .. "-investments_table.json", Utils.TableContentsToJSON(global.Investments.investmentsTable), false, player.index)
+    player.print({"message.wills_spaceship_repair-investments_table_written"})
 end
 
 return Investments

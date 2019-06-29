@@ -3,7 +3,7 @@ data:extend(
         {
             name = "wills_spaceship_repair-investment_dividend_multiplyer",
             type = "int-setting",
-            default_value = 1000,
+            default_value = 10,
             minimum_value = 0,
             setting_type = "runtime-global",
             order = "1001"
@@ -11,7 +11,7 @@ data:extend(
         {
             name = "wills_spaceship_repair-investment_cash_multiplyer",
             type = "int-setting",
-            default_value = 100,
+            default_value = 1,
             minimum_value = 0,
             setting_type = "runtime-global",
             order = "1002"

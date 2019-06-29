@@ -40,6 +40,7 @@ data:extend(
             name = "wills_spaceship_repair-dry_dock-2",
             icon_size = 128,
             icon = Constants.AssetModName .. "/graphics/spacex/technology/space-assembly.png",
+            localised_name = "wills_spaceship_repair-dry_dock_increase",
             effects = {
                 {
                     type = "nothing",

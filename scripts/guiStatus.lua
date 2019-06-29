@@ -10,7 +10,6 @@ end
 
 function GuiStatus.OnLoad()
     Events.RegisterScheduledEventType("GuiStatus.OnSecondUpdate", GuiStatus.OnSecondUpdate)
-    Events.RegisterScheduledEventType("GuiStatus.OnSecondUpdate", GuiStatus.OnSecondUpdate)
 end
 
 function GuiStatus.OnSecondUpdate(event)
@@ -19,23 +18,23 @@ function GuiStatus.OnSecondUpdate(event)
 end
 
 function GuiStatus.CreateStatusGui(player)
-    local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "gui", "flow")
-    local statusFrame = GuiUtil.AddElement({parent = guiFlow, name = "status", type = "frame", direction = "vertical", style = "muppet_padded_frame"}, false)
-    local statusTable = GuiUtil.AddElement({parent = statusFrame, name = "status", type = "table", column_count = 2, draw_horizontal_lines = false, draw_vertical_lines = false}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "total_debt", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "total_debt_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "wages", type = "label", caption = "self", tooltip = "self", style = "muppet_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "wages_value", type = "label", caption = "", tooltip = "self", style = "muppet_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "dividends", type = "label", caption = "self", tooltip = "self", style = "muppet_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "dividends_value", type = "label", caption = "", tooltip = "self", style = "muppet_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "profit", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "profit_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, true)
-    GuiUtil.AddElement({parent = statusTable, name = "game_time", type = "label", caption = "self", style = "muppet_large_bold_text"}, false)
-    GuiUtil.AddElement({parent = statusTable, name = "game_time_value", type = "label", caption = "", style = "muppet_large_bold_text"}, true)
+    local guiFlow = GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "Gui", "gui", "flow")
+    local statusFrame = GuiUtil.AddElement({parent = guiFlow, name = "status", type = "frame", direction = "vertical", style = "muppet_padded_frame"})
+    local statusTable = GuiUtil.AddElement({parent = statusFrame, name = "status", type = "table", column_count = 2, draw_horizontal_lines = false, draw_vertical_lines = false})
+    GuiUtil.AddElement({parent = statusTable, name = "total_debt", type = "label", caption = "self", style = "muppet_large_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "total_debt_value", type = "label", caption = "", style = "muppet_large_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "wages", type = "label", caption = "self", tooltip = "self", style = "muppet_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "wages_value", type = "label", caption = "", tooltip = "self", style = "muppet_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "dividends", type = "label", caption = "self", tooltip = "self", style = "muppet_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "dividends_value", type = "label", caption = "", tooltip = "self", style = "muppet_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit", type = "label", caption = "self", style = "muppet_large_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "bankruptcy_limit_value", type = "label", caption = "", style = "muppet_large_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "profit", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "profit_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited", type = "label", caption = "self", tooltip = "self", style = "muppet_large_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "workforce_recruited_value", type = "label", caption = "", tooltip = "self", style = "muppet_large_bold_text"}, "GuiStatus")
+    GuiUtil.AddElement({parent = statusTable, name = "game_time", type = "label", caption = "self", style = "muppet_large_bold_text"})
+    GuiUtil.AddElement({parent = statusTable, name = "game_time_value", type = "label", caption = "", style = "muppet_large_bold_text"}, "GuiStatus")
 
     GuiStatus.RefreshStatusPlayer(player)
 end
@@ -70,13 +69,13 @@ end
 
 function GuiStatus.UpdateStatusElements(player, guiValues)
     local playerIndex = player.index
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "total_debt_value", "label", {caption = guiValues.totalDebt})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "bankruptcy_limit_value", "label", {caption = guiValues.bankruptcyLimit})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "dividends_value", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "wages_value", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "workforce_recruited_value", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "game_time_value", "label", {caption = guiValues.gameTime})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "total_debt_value", "label", {caption = guiValues.totalDebt})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "bankruptcy_limit_value", "label", {caption = guiValues.bankruptcyLimit})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "dividends_value", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "wages_value", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "workforce_recruited_value", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "game_time_value", "label", {caption = guiValues.gameTime})
+    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
 end
 
 return GuiStatus

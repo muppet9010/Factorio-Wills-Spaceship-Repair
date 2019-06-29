@@ -9,7 +9,6 @@ local GuiInvestments = require("scripts/guiInvestments")
 function Gui.OnStartup()
     GuiStatus.OnStartup()
     GuiOrders.OnStartup()
-    GuiUtil.CreateAllPlayersElementReferenceStorage()
     Gui.GuiRecreateAll()
 
     Gui.OnLoad()
@@ -35,10 +34,9 @@ end
 
 function Gui.GuiRecreate(player)
     Gui.DestroyAllGuis(player)
-    GuiUtil.CreatePlayersElementReferenceStorage(player.index)
-    GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, true)
+    GuiUtil.AddElement({parent = player.gui.left, name = "gui", type = "flow", style = "muppet_padded_vertical_flow", direction = "vertical"}, "Gui")
     GuiStatus.CreateStatusGui(player)
-    GuiOrders.CreateOrderSlots(player)
+    GuiOrders.CreateOrderGui(player)
 end
 
 function Gui.DestroyAllGuis(player)

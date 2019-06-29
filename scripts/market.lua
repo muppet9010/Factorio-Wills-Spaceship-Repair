@@ -3,12 +3,19 @@ local Logging = require("utility/logging")
 local Utils = require("utility/utils")
 
 function Market.OnStartup()
-    if global.marketEntity == nil then
-        global.marketEntity = Market.CreateMarketEntity()
-        if global.marketEntity == nil then
+    global.Market = global.Market or {}
+    if global.Market.marketEntity == nil then
+        global.Market.marketEntity = Market.CreateMarketEntity()
+        if global.Market.marketEntity == nil then
             return
         end
-        Market.PopulateMarketItems(global.marketEntity)
+        Market.PopulateMarketItems(global.Market.marketEntity)
+    end
+    if global.Market.coinBoxEntity == nil then
+        global.Market.coinBoxEntity = Market.CreateCoinBoxEntity()
+        if global.Market.coinBoxEntity == nil then
+            return
+        end
     end
     Market.OnLoad()
 end
@@ -32,6 +39,26 @@ function Market.CreateMarketEntity()
         return nil
     end
     entity.destructible = false
+    return entity
+end
+
+function Market.CreateCoinBoxEntity()
+    local nearSpawnRandomSpot = {
+        x = math.random(-20, 20),
+        y = math.random(-20, 20)
+    }
+    local pos = Utils.GetValidPositionForEntityNearPosition("logistic-chest-passive-provider", global.surface, nearSpawnRandomSpot, 20, 5)
+    if pos == nil then
+        Logging.Log("ERROR: No valid Coin Box at spawn position found")
+        return nil
+    end
+    local entity = global.surface.create_entity {name = "logistic-chest-passive-provider", position = pos, force = "player"}
+    if entity == nil then
+        Logging.Log("ERROR: Coin Box at spawn failed to create at valid position")
+        return nil
+    end
+    entity.destructible = false
+    entity.minable = false
     return entity
 end
 

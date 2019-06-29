@@ -1,16 +1,16 @@
 data:extend(
     {
         {
-            name = "wills_spaceship_repair-investment_dividend_multiplyer",
-            type = "int-setting",
+            name = "wills_spaceship_repair-investment_dividend_multiplier",
+            type = "double-setting",
             default_value = 10,
             minimum_value = 0,
             setting_type = "runtime-global",
             order = "1001"
         },
         {
-            name = "wills_spaceship_repair-investment_cash_multiplyer",
-            type = "int-setting",
+            name = "wills_spaceship_repair-investment_cash_multiplier",
+            type = "double-setting",
             default_value = 1,
             minimum_value = 0,
             setting_type = "runtime-global",
@@ -55,6 +55,13 @@ data:extend(
             minimum_value = 0,
             setting_type = "runtime-global",
             order = "1007"
+        },
+        {
+            name = "wills_spaceship_repair-profit_label",
+            type = "string-setting",
+            default_value = "Profit",
+            setting_type = "runtime-global",
+            order = "1008"
         }
     }
 )

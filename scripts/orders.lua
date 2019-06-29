@@ -246,7 +246,6 @@ function Orders.GetOrderTimeBonus(order)
 end
 
 function Orders.DryDockResearchCompleted()
-    game.print({"message.wills_spaceship_repair-drydock_research_completed"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
         if slot.stateName == Orders.slotStates.waitingCapacityTech.name then
             Orders.SetOrderSlotState(slot, Orders.slotStates.waitingOrderDecryptionStart.name)
@@ -257,7 +256,6 @@ function Orders.DryDockResearchCompleted()
 end
 
 function Orders.OrderDecryptionResearchCompleted()
-    game.print({"message.wills_spaceship_repair-order_decryption_completed"}, {r = 0, g = 1, b = 0, a = 1})
     local decryptionAllowed = 0
     local orderDecrypted = false
     for _, orderSlot in pairs(global.Orders.orderSlots) do
@@ -269,7 +267,7 @@ function Orders.OrderDecryptionResearchCompleted()
         end
     end
     if not orderDecrypted then
-        --Editor in use so fake that the research started before being completed
+        --Editor allows you to complete a research without ever starting it. So fake that the research started before being completed.
         Orders.OnResearchStarted({research = {name = "wills_spaceship_repair-order_decryption-1"}})
         Orders.OrderDecryptionResearchCompleted()
         return
@@ -331,17 +329,17 @@ end
 
 function Orders.OnRocketLaunched(event)
     local rocket = event.rocket
+    local silo = event.rocket_silo
     for name in pairs(rocket.get_inventory(defines.inventory.rocket).get_contents()) do
         if name == "wills_spaceship_repair-dry_dock" then
             Orders.DrydockLaunched()
         elseif Orders.shipParts[name] ~= nil then
-            Orders.ShipPartLaunched(name)
+            Orders.ShipPartLaunched(name, silo)
         end
     end
 end
 
 function Orders.DrydockLaunched()
-    game.print({"message.wills_spaceship_repair-drydock_launched"}, {r = 0, g = 1, b = 0, a = 1})
     for _, slot in pairs(global.Orders.orderSlots) do
         if slot.stateName == Orders.slotStates.waitingDrydock.name then
             Orders.SetOrderSlotState(slot, Orders.slotStates.waitingOrderDecryptionStart.name)
@@ -351,7 +349,7 @@ function Orders.DrydockLaunched()
     Orders.AddOrderSlot(Orders.slotStates.waitingCapacityTech.name)
 end
 
-function Orders.ShipPartLaunched(shipPartName)
+function Orders.ShipPartLaunched(shipPartName, siloEntity)
     local longestWaitingTime, longestWaitingOrder = 0, nil
     local tick = game.tick
     for i, order in pairs(global.Orders.orderSlots) do
@@ -371,9 +369,17 @@ function Orders.ShipPartLaunched(shipPartName)
 
     longestWaitingOrder.itemCountDone = longestWaitingOrder.itemCountDone + 1
     if longestWaitingOrder.itemCountDone < longestWaitingOrder.itemCountNeeded then
+        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = longestWaitingOrder.index})
         return
     end
-    --TODO - call the financials here
+
+    local orderBonus = Orders.GetOrderTimeBonus(longestWaitingOrder)
+    local coinCount = math.floor((Orders.shipParts[shipPartName].value * longestWaitingOrder.itemCountNeeded) * (1 + (orderBonus.modifierPercent / 100)))
+    coinCount = coinCount - siloEntity.get_inventory(defines.inventory.rocket_silo_result).insert({name = "coin", count = coinCount})
+    if coinCount > 0 then
+        siloEntity.surface.spill_item_stack(siloEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+    end
+
     Orders.SetOrderSlotState(longestWaitingOrder, Orders.slotStates.waitingCustomerDepart.name)
 end
 

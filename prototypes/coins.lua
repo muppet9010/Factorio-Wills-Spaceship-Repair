@@ -92,7 +92,7 @@ data:extend(
             allow_decomposition = false,
             ingredients = {
                 {"steel-chest", 10},
-                {"wills_spaceship_repair-iron_coin_chest", 10}
+                {"wills_spaceship_repair-iron_coin_chest", 20}
             },
             result = "wills_spaceship_repair-steel_coin_chest",
             requester_paste_multiplier = 1

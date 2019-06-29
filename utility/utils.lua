@@ -161,8 +161,8 @@ function Utils.LogisticEquation(index, height, steepness)
     return height / (1 + math.exp(steepness * (index - 0)))
 end
 
-function Utils.ExponentialDecayEquation(index, multiplyer, scale)
-    return multiplyer * math.exp(-index * scale)
+function Utils.ExponentialDecayEquation(index, multiplier, scale)
+    return multiplier * math.exp(-index * scale)
 end
 
 function Utils.RoundNumberToDecimalPlaces(num, numDecimalPlaces)
@@ -468,9 +468,9 @@ function Utils.NormalisedChanceList(dataSet, chancePropertyName)
     for k, v in pairs(dataSet) do
         totalChance = totalChance + v[chancePropertyName]
     end
-    local multiplyer = 1 / totalChance
+    local multiplier = 1 / totalChance
     for _, v in pairs(dataSet) do
-        v[chancePropertyName] = v[chancePropertyName] * multiplyer
+        v[chancePropertyName] = v[chancePropertyName] * multiplier
     end
 end
 

@@ -22,6 +22,7 @@ function OrderAudit.LogNewOrder(order)
         item = order.item,
         itemCountNeeded = order.itemCountNeeded,
         startTime = order.startTime,
+        endedTime = "",
         stateName = order.stateName
     }
     global.Orders.orderAuditMap[order.index] = auditIndex

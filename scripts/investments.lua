@@ -14,7 +14,8 @@ local Utils = require("utility/utils")
             investmentAmount = int,
             dividend = int,
             interestAcquired = float,
-            payed = float,
+            paid = float,
+            paidTick = int,
             owed = float,
             maturityTick = int
         }
@@ -25,8 +26,8 @@ local hourTicks = 60 * 60 * 60
 function Investments.OnStartup()
     global.Investments = {}
     global.Investments.investmentsTable = {}
-    global.Investments.dividendsMultiplyer = global.Investments.dividendsMultiplyer or 0
-    global.Investments.cashMultiplyer = global.Investments.cashMultiplyer or 0
+    global.Investments.dividendsmultiplier = global.Investments.dividendsmultiplier or 0
+    global.Investments.cashmultiplier = global.Investments.cashmultiplier or 0
     global.Investments.maturityTicks = global.Investments.maturityTicks or 0
     global.Investments.hourlyInterestRate = global.Investments.hourlyInterestRate or 0
     global.Investments.dividendsPaid = global.Investments.dividendsPaid or 0
@@ -43,12 +44,17 @@ function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
 end
 
-function Investments.UpdateSetting(settingName)
-    if settingName == "wills_spaceship_repair-investment_dividend_multiplyer" or settingName == nil then
-        global.Investments.dividendsMultiplyer = tonumber(settings.global["wills_spaceship_repair-investment_dividend_multiplyer"].value)
+--TODO: some setting changes need to update exisitng data.
+function Investments.UpdateSetting(event)
+    local settingName
+    if event ~= nil then
+        settingName = event.setting
     end
-    if settingName == "wills_spaceship_repair-investment_cash_multiplyer" or settingName == nil then
-        global.Investments.cashMultiplyer = tonumber(settings.global["wills_spaceship_repair-investment_cash_multiplyer"].value)
+    if settingName == "wills_spaceship_repair-investment_dividend_multiplier" or settingName == nil then
+        global.Investments.dividendsmultiplier = tonumber(settings.global["wills_spaceship_repair-investment_dividend_multiplier"].value)
+    end
+    if settingName == "wills_spaceship_repair-investment_cash_multiplier" or settingName == nil then
+        global.Investments.cashmultiplier = tonumber(settings.global["wills_spaceship_repair-investment_cash_multiplier"].value)
     end
     if settingName == "wills_spaceship_repair-investment_maturity_minutes" or settingName == nil then
         global.Investments.maturityTicks = tonumber(settings.global["wills_spaceship_repair-investment_maturity_minutes"].value) * 60 * 60
@@ -82,31 +88,42 @@ function Investments.AddInvestmentCommand(command)
     end
 
     local investmentIndex = #global.Investments.investmentsTable + 1
-    local dividend = investorAmount * global.Investments.dividendsMultiplyer
+    local dividend = math.floor(investorAmount * global.Investments.dividendsmultiplier)
+    local maturityTick = tick + global.Investments.maturityTicks
+    local instantCash = math.floor(investorAmount * global.Investments.cashmultiplier)
     local investment = {
         index = investmentIndex,
         investorName = investorName,
         investmentTick = tick,
         investmentAmount = investorAmount,
+        instantCash = instantCash,
         dividend = dividend,
         interestAcquired = 0,
-        payed = 0,
+        paid = 0,
+        paidTick = "",
         owed = dividend,
-        maturityTick = tick + global.Investments.maturityTicks
+        maturityTick = maturityTick
     }
     global.Investments.investmentsTable[investmentIndex] = investment
     global.Investments.dividendsTotal = global.Investments.dividendsTotal + dividend
-    Events.ScheduleEvent(tick + global.Investments.maturityTicks, "Investments.AddInterest", investmentIndex)
+    Events.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
     game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
-    --TODO pay the instant cash
-    Logging.Log(serpent.block(global.Investments.investmentsTable))
+
+    local coinCount = instantCash
+    coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
+    if coinCount > 0 then
+        global.Market.coinBoxEntity.surface.spill_item_stack(global.Market.coinBoxEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+    end
 end
 
 function Investments.PayInvestors(amount)
+    Logging.Log("PayInvestors start: " .. amount)
+    Logging.Log("Start: " .. Utils.TableContentsToJSON(global.Investments.investmentsTable))
+    local tick = game.tick
     local outstandingInvestments = {}
     for _, investment in ipairs(global.Investments.investmentsTable) do
         if investment.owed > 0 then
-            table.insert(outstandingInvestments, investment.index)
+            table.insert(outstandingInvestments, investment)
         end
     end
     table.sort(outstandingInvestments, Investments.InvestorsIndexSortedByMaturityTime)
@@ -118,19 +135,21 @@ function Investments.PayInvestors(amount)
         amount = amount - given
         investment.owed = investment.owed - given
         if investment.owed == 0 then
+            investment.paidTick = tick
             Events.RemoveScheduledEvent("Investments.AddInterest", investment.index)
         end
-        investment.payed = investment.payed + given
+        investment.paid = investment.paid + given
         if amount == 0 then
             break
         end
     end
+    Logging.Log("End: " .. Utils.TableContentsToJSON(global.Investments.investmentsTable))
+    Logging.Log("PayInvestors end: " .. amount)
     return amount
 end
 
-function Investments.InvestorsIndexSortedByMaturityTime(a, b)
-    local tick = game.tick
-    if (a.maturityTick - tick) < (b.maturityTick - tick) then
+function Investments.InvestorsIndexSortedByMaturityTime(investmentA, investmentB)
+    if investmentA.maturityTick < investmentB.maturityTick then
         return true
     else
         return false

@@ -1,7 +1,7 @@
 local Financials = {}
 local Events = require("utility/events")
 local Investments = require("scripts/investments")
-local Logging = require("utility/utils")
+--local Logging = require("utility/logging")
 
 Financials.coinCapsules = {
     ["wills_spaceship_repair-wooden_coin_chest_delivery_capsule"] = {
@@ -41,7 +41,6 @@ function Financials.OnLoad()
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Financials", Financials.UpdateSetting)
 end
 
---TODO: some setting changes need to update exisitng data.
 function Financials.UpdateSetting(event)
     local settingName
     if event ~= nil then
@@ -52,6 +51,7 @@ function Financials.UpdateSetting(event)
     end
     if settingName == "wills_spaceship_repair-starting_debt_ceiling" or settingName == nil then
         global.Financials.startingDebtCeiling = tonumber(settings.global["wills_spaceship_repair-starting_debt_ceiling"].value)
+        Financials.UpdateBankruptcyLimit()
     end
     if settingName == "wills_spaceship_repair-profit_target" or settingName == nil then
         global.Financials.profitTarget = tonumber(settings.global["wills_spaceship_repair-profit_target"].value)
@@ -67,11 +67,9 @@ function Financials.OnRocketLaunched(event)
     end
 end
 
---TODO: needs testing fully
 function Financials.CoinCapsuleLaunched(name)
     local capsuleValue = Financials.coinCapsules[name].value
 
-    Logging.Log("starting capsuleValue: " .. capsuleValue)
     local wagesOwed = global.Financials.wagesTotal - global.Financials.wagesPaid
     if wagesOwed > 0 then
         local valueToWages
@@ -82,7 +80,6 @@ function Financials.CoinCapsuleLaunched(name)
         end
         global.Financials.wagesPaid = global.Financials.wagesPaid + valueToWages
         capsuleValue = capsuleValue - valueToWages
-        Logging.Log("capsuleValue: " .. capsuleValue .. "     wagesPaid: " .. valueToWages)
     end
     if capsuleValue == 0 then
         return
@@ -93,11 +90,9 @@ function Financials.CoinCapsuleLaunched(name)
         return
     end
 
-    Logging.Log("capsuleValue for profit: " .. capsuleValue)
     global.Financials.profitMade = global.Financials.profitMade + capsuleValue
 end
 
---TODO: needs testing
 function Financials.AddWages(event)
     Events.ScheduleEvent(event.tick + 3600, "Financials.AddWages")
     local workforceCount = #game.connected_players - 1
@@ -105,6 +100,14 @@ function Financials.AddWages(event)
         return
     end
     global.Financials.wagesTotal = global.Financials.wagesTotal + math.floor(workforceCount * global.Financials.workforceMinuteWage)
+end
+
+function Financials.UpdateBankruptcyLimit()
+    local limit = global.Financials.startingDebtCeiling
+    for _, investment in pairs(global.Investments.investmentsTable) do
+        limit = limit + investment.dividend
+    end
+    global.Financials.bankruptcyLimit = limit
 end
 
 return Financials

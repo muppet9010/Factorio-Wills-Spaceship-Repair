@@ -60,12 +60,13 @@ function GuiInvestments.CreateInvestmentsGui(player)
     GuiUtil.AddElement({parent = investmentStatusTable, name = "investment_matured_interest_rate_value", type = "label", style = "muppet_bold_text", caption = Utils.DisplayNumberPretty(global.Investments.hourlyInterestRate * 100) .. "%"})
 
     local investmentScroll = GuiUtil.AddElement({parent = investmentFrame, name = "investment", type = "scroll-pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
-    local investmentTable = GuiUtil.AddElement({parent = investmentScroll, name = "investment", type = "table", column_count = 6, draw_horizontal_lines = false, draw_vertical_lines = false, draw_horizontal_line_after_headers = true, style = "muppet_padded_table_and_cell"})
+    local investmentTable = GuiUtil.AddElement({parent = investmentScroll, name = "investment", type = "table", column_count = 7, draw_horizontal_lines = false, draw_vertical_lines = false, draw_horizontal_line_after_headers = true, style = "muppet_padded_table_and_cell"})
     investmentTable.style.left_cell_padding = 20
     investmentTable.style.right_cell_padding = 20
     GuiUtil.AddElement({parent = investmentTable, name = "investments_investor_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_time_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
+    GuiUtil.AddElement({parent = investmentTable, name = "investments_dividend_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_interest_acquired_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_payment_made_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_outstanding_debt_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
@@ -84,6 +85,8 @@ function GuiInvestments.CreateInvestmentsGui(player)
         investmentAmount.style.font_color = color
         local investmentTime = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_time_" .. investment.index, type = "label", caption = Utils.DisplayTimeOfTicks(investment.investmentTick, "hour", "minute"), style = "muppet_semibold_text"})
         investmentTime.style.font_color = color
+        local investmentDividend = GuiUtil.AddElement({parent = investmentTable, name = "investments_dividend_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.dividend), style = "muppet_semibold_text"})
+        investmentDividend.style.font_color = color
         local interestAcquired = GuiUtil.AddElement({parent = investmentTable, name = "investments_interest_acquired_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.interestAcquired)) .. " [img=item/coin]", style = "muppet_semibold_text"})
         interestAcquired.style.font_color = color
         local paid = GuiUtil.AddElement({parent = investmentTable, name = "investments_payment_made_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.paid)) .. " [img=item/coin]", style = "muppet_semibold_text"})

@@ -55,6 +55,7 @@ function GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, storeName
         end
         element[argName] = argValue
     end
+    return element
 end
 
 function GuiUtil.DestroyElementInPlayersReferenceStorage(playerIndex, storeName, name, type)

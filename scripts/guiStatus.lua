@@ -81,11 +81,13 @@ function GuiStatus.RefreshStatusAll()
 end
 
 function GuiStatus.CalculateStatusElementValues()
+    local totalDebtValue = math.floor(global.Financials.wagesTotal - global.Financials.wagesPaid) + (global.Investments.dividendsTotal - global.Investments.dividendsPaid)
     local guiValues = {}
-    guiValues.totalDebt = Utils.DisplayNumberPretty((global.Financials.wagesTotal - global.Financials.wagesPaid) + (global.Investments.dividendsTotal - global.Investments.dividendsPaid))
+    guiValues.totalDebt = Utils.DisplayNumberPretty(totalDebtValue)
     guiValues.bankruptcyLimit = Utils.DisplayNumberPretty(global.Financials.bankruptcyLimit)
-    guiValues.dividendsPaid = Utils.DisplayNumberPretty(global.Investments.dividendsPaid)
-    guiValues.dividendsTotal = Utils.DisplayNumberPretty(global.Investments.dividendsTotal)
+    guiValues.bankruptcyColor = GuiStatus.CalculateBankruptcyStatusColor(totalDebtValue)
+    guiValues.dividendsPaid = Utils.DisplayNumberPretty(math.floor(global.Investments.dividendsPaid))
+    guiValues.dividendsTotal = Utils.DisplayNumberPretty(math.floor(global.Investments.dividendsTotal))
     guiValues.wagesPaid = Utils.DisplayNumberPretty(global.Financials.wagesPaid)
     guiValues.wagesTotal = Utils.DisplayNumberPretty(global.Financials.wagesTotal)
     guiValues.currentWorkforce = #game.connected_players - 1
@@ -93,18 +95,43 @@ function GuiStatus.CalculateStatusElementValues()
     guiValues.gameTime = Utils.DisplayTimeOfTicks(game.tick, "hour", "second")
     guiValues.profitMade = Utils.DisplayNumberPretty(global.Financials.profitMade)
     guiValues.profitTarget = Utils.DisplayNumberPretty(global.Financials.profitTarget)
+    guiValues.profitColor = GuiStatus.CalculateProfitStatusColor()
     return guiValues
+end
+
+function GuiStatus.CalculateProfitStatusColor()
+    if global.Financials.profitMade >= global.Financials.profitTarget then
+        game.set_game_state {game_finished = true, player_won = true, can_continue = true, victorious_force = "player"}
+        return {r = 0, g = 255, b = 0, a = 255}
+    else
+        return {r = 255, g = 255, b = 255, a = 255}
+    end
+end
+
+function GuiStatus.CalculateBankruptcyStatusColor(totalDebt)
+    if totalDebt < global.Financials.bankruptcyLimit * 0.8 then
+        return {r = 255, g = 255, b = 255, a = 255}
+    elseif totalDebt < global.Financials.bankruptcyLimit * 0.9 then
+        return {r = 255, g = 130, b = 0, a = 255}
+    elseif totalDebt < global.Financials.bankruptcyLimit then
+        return {r = 255, g = 0, b = 0, a = 255}
+    else
+        game.set_game_state {game_finished = true, player_won = false, can_continue = true, victorious_force = "player"}
+        return {r = 255, g = 0, b = 0, a = 255}
+    end
 end
 
 function GuiStatus.UpdateStatusElements(player, guiValues)
     local playerIndex = player.index
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "total_debt_value", "label", {caption = guiValues.totalDebt})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "bankruptcy_limit_value", "label", {caption = guiValues.bankruptcyLimit})
+    local bankruptcyLimitElm = GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "bankruptcy_limit_value", "label", {caption = guiValues.bankruptcyLimit})
+    bankruptcyLimitElm.style.font_color = guiValues.bankruptcyColor
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "dividends_value", "label", {caption = {"self", guiValues.dividendsPaid, guiValues.dividendsTotal}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "wages_value", "label", {caption = {"self", guiValues.wagesPaid, guiValues.wagesTotal}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "workforce_recruited_value", "label", {caption = {"self", guiValues.currentWorkforce, guiValues.maxWorkforce}})
     GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "game_time_value", "label", {caption = guiValues.gameTime})
-    GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
+    local profitValueElm = GuiUtil.UpdateElementFromPlayersReferenceStorage(playerIndex, "GuiStatus", "profit_value", "label", {caption = {"self", guiValues.profitMade, guiValues.profitTarget}})
+    profitValueElm.style.font_color = guiValues.profitColor
 end
 
 return GuiStatus

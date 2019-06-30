@@ -1,7 +1,7 @@
 local Investments = {}
 local Commands = require("utility/commands")
 local Events = require("utility/events")
-local Logging = require("utility/logging")
+--local Logging = require("utility/logging")
 local Constants = require("constants")
 local Utils = require("utility/utils")
 
@@ -117,8 +117,6 @@ function Investments.AddInvestmentCommand(command)
 end
 
 function Investments.PayInvestors(amount)
-    Logging.Log("PayInvestors start: " .. amount)
-    Logging.Log("Start: " .. Utils.TableContentsToJSON(global.Investments.investmentsTable))
     local tick = game.tick
     local outstandingInvestments = {}
     for _, investment in ipairs(global.Investments.investmentsTable) do
@@ -136,15 +134,14 @@ function Investments.PayInvestors(amount)
         investment.owed = investment.owed - given
         if investment.owed == 0 then
             investment.paidTick = tick
-            Events.RemoveScheduledEvent("Investments.AddInterest", investment.index)
+            Events.RemoveScheduledEvents("Investments.AddInterest", investment.index)
         end
         investment.paid = investment.paid + given
+        global.Investments.dividendsPaid = global.Investments.dividendsPaid + given
         if amount == 0 then
             break
         end
     end
-    Logging.Log("End: " .. Utils.TableContentsToJSON(global.Investments.investmentsTable))
-    Logging.Log("PayInvestors end: " .. amount)
     return amount
 end
 
@@ -160,9 +157,10 @@ function Investments.AddInterest(event)
     local tick = event.tick
     local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
-    local interest = investment.owed * global.Investments.hourlyInterestRate
+    local interest = math.floor(investment.owed * global.Investments.hourlyInterestRate)
     investment.interestAcquired = investment.interestAcquired + interest
     investment.owed = investment.owed + interest
+    global.Investments.dividendsTotal = global.Investments.dividendsTotal + interest
     Events.ScheduleEvent(tick + hourTicks, "Investments.AddInterest", investmentIndex)
 end
 

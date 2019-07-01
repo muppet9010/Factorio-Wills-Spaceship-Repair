@@ -375,9 +375,11 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
 
     local orderBonus = Orders.GetOrderTimeBonus(longestWaitingOrder)
     local coinCount = math.floor((Orders.shipParts[shipPartName].value * longestWaitingOrder.itemCountNeeded) * (1 + (orderBonus.modifierPercent / 100)))
-    coinCount = coinCount - siloEntity.get_inventory(defines.inventory.rocket_silo_result).insert({name = "coin", count = coinCount})
-    if coinCount > 0 then
-        siloEntity.surface.spill_item_stack(siloEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+    global.playerForce.item_production_statistics.on_flow("coin", coinCount)
+
+    local coinsToPlace = coinCount - siloEntity.get_inventory(defines.inventory.rocket_silo_result).insert({name = "coin", count = coinCount})
+    if coinsToPlace > 0 then
+        siloEntity.surface.spill_item_stack(siloEntity.position, {name = "coin", count = coinsToPlace}, true, nil, true)
     end
 
     Orders.SetOrderSlotState(longestWaitingOrder, Orders.slotStates.waitingCustomerDepart.name)

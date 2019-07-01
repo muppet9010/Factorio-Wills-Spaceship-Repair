@@ -69,6 +69,7 @@ end
 
 function Financials.CoinCapsuleLaunched(name)
     local capsuleValue = Financials.coinCapsules[name].value
+    global.playerForce.item_production_statistics.on_flow("coin", -capsuleValue)
 
     local wagesOwed = global.Financials.wagesTotal - global.Financials.wagesPaid
     if wagesOwed > 0 then

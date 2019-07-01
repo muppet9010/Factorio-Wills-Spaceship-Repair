@@ -103,6 +103,7 @@ data:extend(
             energy_required = 60,
             enabled = false,
             category = "crafting",
+            hide_from_stats = true,
             ingredients = {
                 {"low-density-structure", 100},
                 {"solar-panel", 10},

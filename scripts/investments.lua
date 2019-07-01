@@ -30,8 +30,8 @@ function Investments.OnStartup()
     global.Investments.cashmultiplier = global.Investments.cashmultiplier or 0
     global.Investments.maturityTicks = global.Investments.maturityTicks or 0
     global.Investments.hourlyInterestRate = global.Investments.hourlyInterestRate or 0
-    global.Investments.dividendsPaid = global.Investments.dividendsPaid or 0
-    global.Investments.dividendsTotal = global.Investments.dividendsTotal or 0
+    global.Investments.investorsPaid = global.Investments.investorsPaid or 0
+    global.Investments.investorsTotal = global.Investments.investorsTotal or 0
 
     Investments.UpdateSetting(nil)
     Investments.OnLoad()
@@ -44,7 +44,6 @@ function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
 end
 
---TODO: some setting changes need to update exisitng data.
 function Investments.UpdateSetting(event)
     local settingName
     if event ~= nil then
@@ -52,6 +51,7 @@ function Investments.UpdateSetting(event)
     end
     if settingName == "wills_spaceship_repair-investment_dividend_multiplier" or settingName == nil then
         global.Investments.dividendsmultiplier = tonumber(settings.global["wills_spaceship_repair-investment_dividend_multiplier"].value)
+        Investments.UpdateInvestmentDividendMultiplier()
     end
     if settingName == "wills_spaceship_repair-investment_cash_multiplier" or settingName == nil then
         global.Investments.cashmultiplier = tonumber(settings.global["wills_spaceship_repair-investment_cash_multiplier"].value)
@@ -61,6 +61,7 @@ function Investments.UpdateSetting(event)
     end
     if settingName == "wills_spaceship_repair-matured_investment_dividend_hourly_interest" or settingName == nil then
         global.Investments.hourlyInterestRate = tonumber(settings.global["wills_spaceship_repair-matured_investment_dividend_hourly_interest"].value) / 100
+        Investments.MaturedInvestmentHourlyInterestRateChanged()
     end
 end
 
@@ -105,9 +106,11 @@ function Investments.AddInvestmentCommand(command)
         maturityTick = maturityTick
     }
     global.Investments.investmentsTable[investmentIndex] = investment
-    global.Investments.dividendsTotal = global.Investments.dividendsTotal + dividend
+    global.Investments.investorsTotal = global.Investments.investorsTotal + dividend
     Events.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
     game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
+    global.playerForce.item_production_statistics.on_flow("coin", instantCash)
+    global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit + dividend
 
     local coinCount = instantCash
     coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
@@ -137,7 +140,7 @@ function Investments.PayInvestors(amount)
             Events.RemoveScheduledEvents("Investments.AddInterest", investment.index)
         end
         investment.paid = investment.paid + given
-        global.Investments.dividendsPaid = global.Investments.dividendsPaid + given
+        global.Investments.investorsPaid = global.Investments.investorsPaid + given
         if amount == 0 then
             break
         end
@@ -160,7 +163,7 @@ function Investments.AddInterest(event)
     local interest = math.floor(investment.owed * global.Investments.hourlyInterestRate)
     investment.interestAcquired = investment.interestAcquired + interest
     investment.owed = investment.owed + interest
-    global.Investments.dividendsTotal = global.Investments.dividendsTotal + interest
+    global.Investments.investorsTotal = global.Investments.investorsTotal + interest
     Events.ScheduleEvent(tick + hourTicks, "Investments.AddInterest", investmentIndex)
 end
 
@@ -168,6 +171,51 @@ function Investments.WriteOutTableCommand(commandData)
     local player = game.get_player(commandData.player_index)
     game.write_file(Constants.ModName .. "-investments_table.json", Utils.TableContentsToJSON(global.Investments.investmentsTable), false, player.index)
     player.print({"message.wills_spaceship_repair-investments_table_written"})
+end
+
+function Investments.UpdateInvestmentDividendMultiplier()
+    local tick = game.tick
+    for _, investment in pairs(global.Investments.investmentsTable) do
+        if investment.owed > 0 then
+            investment.dividend = math.floor(investment.investmentAmount * global.Investments.dividendsmultiplier)
+            Investments.UpdateInvestmentOwedPaid(investment, tick)
+        end
+    end
+    Investments.RecalculateTotals()
+end
+
+function Investments.MaturedInvestmentHourlyInterestRateChanged()
+    local tick = game.tick
+    for _, investment in pairs(global.Investments.investmentsTable) do
+        if investment.owed > 0 and investment.interestAcquired > 0 then
+            local hoursPassed = math.floor((tick - investment.maturityTick) / hourTicks) + 1
+            investment.interestAcquired = 0
+            for i = 1, hoursPassed do
+                investment.interestAcquired = math.floor((investment.dividend + investment.interestAcquired) * global.Investments.hourlyInterestRate)
+            end
+            Investments.UpdateInvestmentOwedPaid(investment, tick)
+        end
+    end
+    Investments.RecalculateTotals()
+end
+
+function Investments.UpdateInvestmentOwedPaid(investment, tick)
+    investment.owed = (investment.dividend + investment.interestAcquired) - investment.paid
+    if investment.owed <= 0 then
+        investment.owed = 0
+        investment.paidTick = tick
+    end
+    investment.paid = math.min(investment.paid, investment.dividend + investment.interestAcquired)
+end
+
+function Investments.RecalculateTotals()
+    local investorsPaid, investorsTotal = 0, 0
+    for _, investment in pairs(global.Investments.investmentsTable) do
+        investorsPaid = investorsPaid + investment.paid
+        investorsTotal = investorsTotal + investment.owed
+    end
+    global.Investments.investorsPaid = investorsPaid
+    global.Investments.investorsTotal = investorsTotal
 end
 
 return Investments

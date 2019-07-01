@@ -4,6 +4,7 @@ local Events = require("utility/events")
 --local Logging = require("utility/logging")
 local Constants = require("constants")
 local Utils = require("utility/utils")
+local EventScheduler = require("utility/event-scheduler")
 
 --[[
     global.Investments.investmentsTable = {
@@ -41,7 +42,7 @@ end
 function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-add_investment", {"api-description.wills_spaceship_repair-add_investment"}, Investments.AddInvestmentCommand, true)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Investments", Investments.UpdateSetting)
-    Events.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
+    EventScheduler.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
 end
 
@@ -108,7 +109,7 @@ function Investments.AddInvestmentCommand(command)
     }
     global.Investments.investmentsTable[investmentIndex] = investment
     global.Investments.investorsTotal = global.Investments.investorsTotal + dividend
-    Events.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
+    EventScheduler.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
     game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
     global.playerForce.item_production_statistics.on_flow("coin", instantCash)
     global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit + dividend
@@ -138,7 +139,7 @@ function Investments.PayInvestors(amount)
         investment.owed = investment.owed - given
         if investment.owed == 0 then
             investment.paidTick = tick
-            Events.RemoveScheduledEvents("Investments.AddInterest", investment.index)
+            EventScheduler.RemoveScheduledEvents("Investments.AddInterest", investment.index)
         end
         investment.paid = investment.paid + given
         global.Investments.investorsPaid = global.Investments.investorsPaid + given
@@ -165,7 +166,7 @@ function Investments.AddInterest(event)
     investment.interestAcquired = investment.interestAcquired + interest
     investment.owed = investment.owed + interest
     global.Investments.investorsTotal = global.Investments.investorsTotal + interest
-    Events.ScheduleEvent(tick + hourTicks, "Investments.AddInterest", investmentIndex)
+    EventScheduler.ScheduleEvent(tick + hourTicks, "Investments.AddInterest", investmentIndex)
 end
 
 function Investments.WriteOutTableCommand(commandData)

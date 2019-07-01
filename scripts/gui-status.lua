@@ -3,6 +3,7 @@ local Events = require("utility/events")
 local GuiUtil = require("utility/gui-util")
 local Utils = require("utility/utils")
 --local Logging = require("utility/logging")
+local EventScheduler = require("utility/event-scheduler")
 
 function GuiStatus.CreateGlobals()
     global.GuiStatus = global.GuiStatus or {}
@@ -10,12 +11,12 @@ function GuiStatus.CreateGlobals()
 end
 
 function GuiStatus.OnStartup()
-    Events.ScheduleEvent(60, "GuiStatus.OnSecondUpdate")
+    EventScheduler.ScheduleEvent(60, "GuiStatus.OnSecondUpdate")
     GuiStatus.UpdateSetting(nil)
 end
 
 function GuiStatus.OnLoad()
-    Events.RegisterScheduledEventType("GuiStatus.OnSecondUpdate", GuiStatus.OnSecondUpdate)
+    EventScheduler.RegisterScheduledEventType("GuiStatus.OnSecondUpdate", GuiStatus.OnSecondUpdate)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "GuiStatus", GuiStatus.UpdateSetting)
 end
 
@@ -31,7 +32,7 @@ function GuiStatus.UpdateSetting(event)
 end
 
 function GuiStatus.OnSecondUpdate(event)
-    Events.ScheduleEvent(event.tick + 60, "GuiStatus.OnSecondUpdate")
+    EventScheduler.ScheduleEvent(event.tick + 60, "GuiStatus.OnSecondUpdate")
     GuiStatus.RefreshStatusAll()
 end
 

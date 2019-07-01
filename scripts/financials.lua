@@ -2,6 +2,7 @@ local Financials = {}
 local Events = require("utility/events")
 local Investments = require("scripts/investments") --TODO
 --local Logging = require("utility/logging")
+local EventScheduler = require("utility/event-scheduler")
 
 Financials.coinCapsules = {
     ["wills_spaceship_repair-wooden_coin_chest_delivery_capsule"] = {
@@ -31,13 +32,13 @@ function Financials.CreateGlobals()
 end
 
 function Financials.OnStartup()
-    Events.ScheduleEvent(3600, "Financials.AddWages")
+    EventScheduler.ScheduleEvent(3600, "Financials.AddWages")
     Financials.UpdateSetting(nil)
 end
 
 function Financials.OnLoad()
     Events.RegisterHandler(defines.events.on_rocket_launched, "Financials", Financials.OnRocketLaunched)
-    Events.RegisterScheduledEventType("Financials.AddWages", Financials.AddWages)
+    EventScheduler.RegisterScheduledEventType("Financials.AddWages", Financials.AddWages)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Financials", Financials.UpdateSetting)
 end
 
@@ -95,7 +96,7 @@ function Financials.CoinCapsuleLaunched(name)
 end
 
 function Financials.AddWages(event)
-    Events.ScheduleEvent(event.tick + 3600, "Financials.AddWages")
+    EventScheduler.ScheduleEvent(event.tick + 3600, "Financials.AddWages")
     local workforceCount = #game.connected_players - 1
     if workforceCount < 1 then
         return

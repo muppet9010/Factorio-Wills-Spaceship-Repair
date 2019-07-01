@@ -4,6 +4,7 @@ local GuiUtil = require("utility/gui-util")
 local Utils = require("utility/utils")
 local Orders = require("scripts/orders")
 --local Logging = require("utility/logging")
+local EventScheduler = require("utility/event-scheduler")
 
 function GuiOrders.CreateGlobals()
     global.GuiOrders = global.GuiOrders or {}
@@ -15,7 +16,7 @@ function GuiOrders.OnLoad()
     Events.RegisterHandler(defines.events.on_player_joined_game, "GuiOrders", GuiOrders.OnPlayerJoinedGame)
     Events.RegisterHandler("Orders.OrderSlotAdded", "GuiOrders.OnOrderSlotAdded", GuiOrders.OnOrderSlotAdded)
     Events.RegisterHandler("Orders.OrderSlotUpdated", "GuiOrders.OnOrderSlotUpdated", GuiOrders.RefreshOrdersAll)
-    Events.RegisterScheduledEventType("GuiOrders.UpdateOrderSlotRow", GuiOrders.UpdateOrderSlotRow)
+    EventScheduler.RegisterScheduledEventType("GuiOrders.UpdateOrderSlotRow", GuiOrders.UpdateOrderSlotRow)
     Events.RegisterHandler(defines.events.on_lua_shortcut, "GuiOrders", GuiOrders.OnLuaShortcut)
 end
 
@@ -117,13 +118,13 @@ function GuiOrders.CalculateAllOrderSlotTableValues()
         tableValues[i] = GuiOrders.CalculateOrderSlotTableValues(order.index)
     end
 
-    Events.RemoveScheduledEvents("GuiOrders.UpdateOrderSlotRow")
+    EventScheduler.RemoveScheduledEvents("GuiOrders.UpdateOrderSlotRow")
     local tick = game.tick
     for _, order in pairs(global.Orders.orderSlots) do
         local timeWaiting = tick - order.startTime
         local lastUpdateWaitingTick = math.floor(timeWaiting / 3600) * 3600
         local nextUpdateTick = order.startTime + lastUpdateWaitingTick + 3600
-        Events.ScheduleEvent(nextUpdateTick, "GuiOrders.UpdateOrderSlotRow", order.index)
+        EventScheduler.ScheduleEvent(nextUpdateTick, "GuiOrders.UpdateOrderSlotRow", order.index)
     end
 
     return tableValues
@@ -144,7 +145,7 @@ end
 
 function GuiOrders.UpdateOrderSlotRow(scheduledEvent)
     local orderIndex = scheduledEvent.instanceId
-    Events.ScheduleEvent(scheduledEvent.tick + 3600, "GuiOrders.UpdateOrderSlotRow", orderIndex)
+    EventScheduler.ScheduleEvent(scheduledEvent.tick + 3600, "GuiOrders.UpdateOrderSlotRow", orderIndex)
     local orderSlotValues = GuiOrders.CalculateOrderSlotTableValues(orderIndex)
     local guiIndex = global.GuiOrders.orderGuiIndexMapping[orderSlotValues.index]
     for _, player in ipairs(game.connected_players) do

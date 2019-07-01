@@ -2,6 +2,7 @@ local Map = {}
 local Events = require("utility/events")
 local Utils = require("utility/utils")
 local Logging = require("utility/logging")
+local EventScheduler = require("utility/event-scheduler")
 
 local desiredRegionSize = 2500
 Map.regionEdgeLengthChunks = math.floor(desiredRegionSize / 32)
@@ -47,7 +48,7 @@ function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_chunk_generated, "Map", Map.OnChunkGenerated)
     Events.RegisterHandler(defines.events.on_entity_died, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     Events.RegisterHandler(defines.events.script_raised_destroy, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
-    Events.RegisterScheduledEventType("Map.ScheduledMakeSiloAtPosition", Map.ScheduledMakeSiloAtPosition)
+    EventScheduler.RegisterScheduledEventType("Map.ScheduledMakeSiloAtPosition", Map.ScheduledMakeSiloAtPosition)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -271,7 +272,7 @@ function Map.OnMaybeRocketSiloDiedDestroyed(event)
     local region = Map.GetRegionForChunkPos(Utils.GetChunkPositionForTilePosition(pos))
     if region ~= nil then
         Logging.LogPrint("Rocket silo scheduled for recreation", debugLogging)
-        Events.ScheduleEvent(nil, "Map.ScheduledMakeSiloAtPosition", region.index, {region = region, position = region.Silo.position})
+        EventScheduler.ScheduleEvent(nil, "Map.ScheduledMakeSiloAtPosition", region.index, {region = region, position = region.Silo.position})
     end
 end
 

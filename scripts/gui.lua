@@ -2,9 +2,9 @@ local Gui = {}
 local Events = require("utility/events")
 local GuiUtil = require("utility/gui-util")
 --local Logging = require("utility/logging")
-local GuiStatus = require("scripts/guiStatus")
-local GuiOrders = require("scripts/guiOrders")
-local GuiInvestments = require("scripts/guiInvestments")
+local GuiStatus = require("scripts/gui-status")
+local GuiOrders = require("scripts/gui-orders")
+local GuiInvestments = require("scripts/gui-investments")
 
 function Gui.CreateGlobals()
     GuiOrders.CreateGlobals()

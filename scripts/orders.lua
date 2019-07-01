@@ -3,7 +3,8 @@ local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
 --local Logging = require("utility/logging")
-local OrderAudit = require("scripts/orderAudit") --TODO
+local OrderAudit = require("scripts/order-audit") --TODO
+local EventScheduler = require("utility/event-scheduler")
 
 --[[
     global.Orders.orderSlots = {
@@ -155,14 +156,14 @@ function Orders.CreateGlobals()
 end
 
 function Orders.OnStartup()
-    Events.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
+    EventScheduler.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
 end
 
 function Orders.OnLoad()
     Events.RegisterHandler(defines.events.on_research_finished, "Orders", Orders.OnResearchFinished)
     Events.RegisterHandler(defines.events.on_rocket_launched, "Orders", Orders.OnRocketLaunched)
     Events.RegisterHandler(defines.events.on_research_started, "Orders", Orders.OnResearchStarted)
-    Events.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
+    EventScheduler.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
     Events.RegisterEvent("Orders.OrderSlotAdded")
     Events.RegisterEvent("Orders.OrderSlotUpdated")
 
@@ -401,7 +402,7 @@ end
 
 function Orders.UpdateAllOrdersSlotDeadlineTimes(event)
     local tick = event.tick
-    Events.ScheduleEvent(tick + 60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
+    EventScheduler.ScheduleEvent(tick + 60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
     for _, order in pairs(global.Orders.orderSlots) do
         if order.deadlineTime ~= nil then
             Orders.UpdateOrderSlotDeadlineTimes(order, tick)

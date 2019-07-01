@@ -1,6 +1,6 @@
 local Financials = {}
 local Events = require("utility/events")
-local Investments = require("scripts/investments")
+local Investments = require("scripts/investments") --TODO
 --local Logging = require("utility/logging")
 
 Financials.coinCapsules = {
@@ -18,7 +18,7 @@ Financials.coinCapsules = {
     }
 }
 
-function Financials.OnStartup()
+function Financials.CreateGlobals()
     global.Financials = global.Financials or {}
     global.Financials.profitMade = global.Financials.profitMade or 0
     global.Financials.profitTarget = global.Financials.profitTarget or 0
@@ -28,11 +28,11 @@ function Financials.OnStartup()
     global.Financials.workforceMinuteWage = global.Financials.workforceMinuteWage or 0
     global.Financials.startingDebtCeiling = global.Financials.startingDebtCeiling or 0
     global.Financials.profitTarget = global.Financials.profitTarget or 0
+end
 
+function Financials.OnStartup()
     Events.ScheduleEvent(3600, "Financials.AddWages")
-
     Financials.UpdateSetting(nil)
-    Financials.OnLoad()
 end
 
 function Financials.OnLoad()

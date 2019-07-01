@@ -3,7 +3,7 @@ local Constants = require("constants")
 local Utils = require("utility/utils")
 local Events = require("utility/events")
 --local Logging = require("utility/logging")
-local OrderAudit = require("scripts/orderAudit")
+local OrderAudit = require("scripts/orderAudit") --TODO
 
 --[[
     global.Orders.orderSlots = {
@@ -149,13 +149,13 @@ Orders.shipParts = {
 }
 Utils.NormalisedChanceList(Orders.shipParts, "chance")
 
-function Orders.OnStartup()
+function Orders.CreateGlobals()
     global.Orders = global.Orders or {}
     global.Orders.orderSlots = global.Orders.orderSlots or {}
-    Events.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
+end
 
-    OrderAudit.OnStartup()
-    Orders.OnLoad()
+function Orders.OnStartup()
+    Events.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
 end
 
 function Orders.OnLoad()

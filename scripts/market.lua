@@ -2,8 +2,11 @@ local Market = {}
 local Logging = require("utility/logging")
 local Utils = require("utility/utils")
 
-function Market.OnStartup()
+function Market.CreateGlobals()
     global.Market = global.Market or {}
+end
+
+function Market.OnStartup()
     if global.Market.marketEntity == nil then
         global.Market.marketEntity = Market.CreateMarketEntity()
         if global.Market.marketEntity == nil then
@@ -17,10 +20,6 @@ function Market.OnStartup()
             return
         end
     end
-    Market.OnLoad()
-end
-
-function Market.OnLoad()
 end
 
 function Market.CreateMarketEntity()

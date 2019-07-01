@@ -1,9 +1,8 @@
 local RecruitWorkforce = {}
 local Events = require("utility/events")
 
-function RecruitWorkforce.OnStartup()
+function RecruitWorkforce.CreateGlobals()
     global.recruitedWorkforceCount = global.recruitedWorkforceCount or 0
-    RecruitWorkforce.OnLoad()
 end
 
 function RecruitWorkforce.OnLoad()

@@ -5,7 +5,7 @@ local Utils = require("utility/utils")
 local Orders = require("scripts/orders")
 --local Logging = require("utility/logging")
 
-function GuiOrders.OnStartup()
+function GuiOrders.CreateGlobals()
     global.GuiOrders = global.GuiOrders or {}
     global.GuiOrders.orderGuiIndexMapping = global.GuiOrders.orderGuiIndexMapping or {}
     global.GuiOrders.playerGuiClosed = global.GuiOrders.playerGuiClosed or {}
@@ -80,6 +80,7 @@ function GuiOrders.GetAddOrderSlotTable(player)
         local ordersScroll = GuiUtil.AddElement({parent = ordersFrame, name = "orderSlots", type = "scroll-pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto"})
         ordersScroll.style.maximal_height = 300
         table = GuiUtil.AddElement({parent = ordersScroll, name = "orderSlots", type = "table", column_count = 3, draw_horizontal_lines = true, draw_vertical_lines = false, style = "muppet_padded_table_cells"}, "GuiOrders")
+        player.set_shortcut_toggled("wills_spaceship_repair-orders_gui_button", true)
     end
     return table
 end
@@ -165,6 +166,7 @@ end
 function GuiOrders.ToggleOrdersGui(player)
     if GuiUtil.GetElementFromPlayersReferenceStorage(player.index, "GuiOrders", "orderSlots", "frame") ~= nil then
         GuiOrders.DestroyOrdersGui(player)
+        player.set_shortcut_toggled("wills_spaceship_repair-orders_gui_button", false)
     else
         GuiOrders.CreateOrderGui(player, true)
     end

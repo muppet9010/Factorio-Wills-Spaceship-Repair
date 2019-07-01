@@ -6,12 +6,14 @@ local GuiStatus = require("scripts/guiStatus")
 local GuiOrders = require("scripts/guiOrders")
 local GuiInvestments = require("scripts/guiInvestments")
 
+function Gui.CreateGlobals()
+    GuiOrders.CreateGlobals()
+    GuiStatus.CreateGlobals()
+end
+
 function Gui.OnStartup()
     GuiStatus.OnStartup()
-    GuiOrders.OnStartup()
     Gui.GuiRecreateAll()
-
-    Gui.OnLoad()
 end
 
 function Gui.OnLoad()

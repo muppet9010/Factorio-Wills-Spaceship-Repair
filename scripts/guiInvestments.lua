@@ -11,11 +11,10 @@ end
 
 function GuiInvestments.OnLuaShortcut(event)
     local shortcutName = event.prototype_name
-    if shortcutName ~= "wills_spaceship_repair-investments_gui_button" then
-        return
+    if shortcutName == "wills_spaceship_repair-investments_gui_button" then
+        local player = game.get_player(event.player_index)
+        GuiInvestments.ToggleInvestmentsGui(player)
     end
-    local player = game.get_player(event.player_index)
-    GuiInvestments.ToggleInvestmentsGui(player)
 end
 
 function GuiInvestments.ToggleInvestmentsGui(player)
@@ -28,6 +27,7 @@ end
 
 function GuiInvestments.DestroyInvestmentsGui(player)
     GuiUtil.DestroyPlayersReferenceStorage(player.index, "GuiInvestments")
+    player.set_shortcut_toggled("wills_spaceship_repair-investments_gui_button", false)
 end
 
 function GuiInvestments.CreateInvestmentsGui(player)
@@ -92,12 +92,15 @@ function GuiInvestments.CreateInvestmentsGui(player)
         local debt = GuiUtil.AddElement({parent = investmentTable, name = "investments_outstanding_debt" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.owed)) .. " [img=item/coin]", style = "muppet_semibold_text"})
         debt.style.font_color = color
     end
+
+    player.set_shortcut_toggled("wills_spaceship_repair-investments_gui_button", true)
 end
 
 function GuiInvestments.OnGuiClick(event)
     local elmName = event.element.name
     if elmName == GuiUtil.GenerateName("investment_close_button", "sprite-button") then
-        GuiInvestments.DestroyInvestmentsGui(game.get_player(event.player_index))
+        local player = game.get_player(event.player_index)
+        GuiInvestments.DestroyInvestmentsGui(player)
     end
 end
 

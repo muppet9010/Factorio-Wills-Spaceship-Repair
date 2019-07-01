@@ -4,7 +4,7 @@ local Commands = require("utility/commands")
 local Constants = require("constants")
 local Utils = require("utility/utils")
 
-function OrderAudit.OnStartup()
+function OrderAudit.CreateGlobals()
     global.Orders.orderAuditTable = global.Orders.orderAuditTable or {}
     global.Orders.orderAuditMap = global.Orders.orderAuditMap or {}
 end

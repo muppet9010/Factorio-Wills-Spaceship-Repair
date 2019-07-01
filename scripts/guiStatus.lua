@@ -4,10 +4,12 @@ local GuiUtil = require("utility/gui-util")
 local Utils = require("utility/utils")
 --local Logging = require("utility/logging")
 
-function GuiStatus.OnStartup()
+function GuiStatus.CreateGlobals()
     global.GuiStatus = global.GuiStatus or {}
     global.GuiStatus.profitLabel = global.GuiStatus.profitLabel or ""
+end
 
+function GuiStatus.OnStartup()
     Events.ScheduleEvent(60, "GuiStatus.OnSecondUpdate")
     GuiStatus.UpdateSetting(nil)
 end

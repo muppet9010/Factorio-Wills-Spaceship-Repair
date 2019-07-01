@@ -7,21 +7,20 @@ local Financials = require("scripts/financials")
 local Gui = require("scripts/gui")
 local Market = require("scripts/market")
 local Map = require("scripts/map")
+local OrderAudit = require("scripts/orderAudit")
 
-local function OnStartup()
+local function CreateGlobals()
     global.surface = game.surfaces[1]
     global.playerForce = game.forces[1]
     global.playerForce.research_queue_enabled = true
-    Utils.DisableIntroMessage()
-    Utils.DisableWinOnRocket()
-    RecruitWorkforce.OnStartup()
-    Investments.OnStartup()
-    Orders.OnStartup()
-    Financials.OnStartup()
-    Market.OnStartup()
-    Map.OnStartup()
-
-    Gui.OnStartup()
+    RecruitWorkforce.CreateGlobals()
+    Investments.CreateGlobals()
+    Orders.CreateGlobals()
+    OrderAudit.CreateGlobals()
+    Financials.CreateGlobals()
+    Map.CreateGlobals()
+    Market.CreateGlobals()
+    Gui.CreateGlobals()
 end
 
 local function OnLoad()
@@ -30,10 +29,24 @@ local function OnLoad()
     Investments.OnLoad()
     Orders.OnLoad()
     Financials.OnLoad()
-    Market.OnLoad()
     Map.OnLoad()
 
     Gui.OnLoad()
+end
+
+local function OnStartup()
+    CreateGlobals()
+
+    Utils.DisableIntroMessage()
+    Utils.DisableWinOnRocket()
+    Investments.OnStartup()
+    Orders.OnStartup()
+    Financials.OnStartup()
+    Market.OnStartup()
+    Map.OnStartup()
+    Gui.OnStartup()
+
+    OnLoad()
 end
 
 script.on_init(OnStartup)

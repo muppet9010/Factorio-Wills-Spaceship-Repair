@@ -29,18 +29,18 @@ Map.coinMachineChance = {
 
 local debugLogging = false
 
-function Map.OnStartup()
+function Map.CreateGlobals()
     global.Map = global.map or {}
     global.Map.regions = global.Map.regions or {}
+end
 
+function Map.OnStartup()
     if global.Map.spawnCoinMachine3Entity == nil then
         global.Map.spawnCoinMachine3Entity = Map.CreateSpawnCoin3MachineEntity()
         if global.Map.spawnCoinMachine3Entity == nil then
             return
         end
     end
-
-    Map.OnLoad()
 end
 
 function Map.OnLoad()

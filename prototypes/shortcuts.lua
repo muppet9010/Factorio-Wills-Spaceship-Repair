@@ -6,6 +6,7 @@ data:extend(
             type = "shortcut",
             name = "wills_spaceship_repair-investments_gui_button",
             action = "lua",
+            toggleable = true,
             icon = {
                 filename = Constants.AssetModName .. "/graphics/shortcuts/investments32.png",
                 width = 32,
@@ -26,6 +27,7 @@ data:extend(
             type = "shortcut",
             name = "wills_spaceship_repair-orders_gui_button",
             action = "lua",
+            toggleable = true,
             icon = {
                 filename = Constants.AssetModName .. "/graphics/shortcuts/orders32.png",
                 width = 32,

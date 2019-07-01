@@ -23,7 +23,7 @@ local Utils = require("utility/utils")
 ]]
 local hourTicks = 60 * 60 * 60
 
-function Investments.OnStartup()
+function Investments.CreateGlobals()
     global.Investments = {}
     global.Investments.investmentsTable = {}
     global.Investments.dividendsmultiplier = global.Investments.dividendsmultiplier or 0
@@ -32,9 +32,10 @@ function Investments.OnStartup()
     global.Investments.hourlyInterestRate = global.Investments.hourlyInterestRate or 0
     global.Investments.investorsPaid = global.Investments.investorsPaid or 0
     global.Investments.investorsTotal = global.Investments.investorsTotal or 0
+end
 
+function Investments.OnStartup()
     Investments.UpdateSetting(nil)
-    Investments.OnLoad()
 end
 
 function Investments.OnLoad()

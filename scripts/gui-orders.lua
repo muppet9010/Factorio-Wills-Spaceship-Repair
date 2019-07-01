@@ -38,8 +38,7 @@ function GuiOrders.RefreshOrdersAll()
 end
 
 function GuiOrders.OnOrderSlotAdded(event)
-    local orderSlotIndex = event.orderSlotIndex
-    local order = global.Orders.orderSlots[orderSlotIndex]
+    local order = event.order
     for _, player in pairs(game.connected_players) do
         if global.GuiOrders.playerGuiClosed[player.index] == nil then
             local table = GuiOrders.GetAddOrderSlotTable(player)

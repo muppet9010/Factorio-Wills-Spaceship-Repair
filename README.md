@@ -27,3 +27,4 @@ Colored assembling machine graphics from Bobs Assembling Machines with permissio
 Testing Notes
 ------
 The mod may not test correctly with Creative Mode and this mod isn't supported.
+Don't use with an island map.

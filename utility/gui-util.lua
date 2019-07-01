@@ -73,9 +73,11 @@ function GuiUtil.DestroyPlayersReferenceStorage(playerIndex, storeName)
         return
     end
     if storeName == nil then
-        for _, element in pairs(global.GUIUtilPlayerElementReferenceStorage[playerIndex]) do
-            if element.valid then
-                element.destroy()
+        for _, store in pairs(global.GUIUtilPlayerElementReferenceStorage[playerIndex]) do
+            for _, element in pairs(store) do
+                if element.valid then
+                    element.destroy()
+                end
             end
         end
         global.GUIUtilPlayerElementReferenceStorage[playerIndex] = nil

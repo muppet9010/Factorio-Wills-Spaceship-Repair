@@ -2,7 +2,7 @@ local OrderAudit, SlotStates = {}
 local Commands = require("utility/commands")
 local Constants = require("constants")
 local Utils = require("utility/utils")
-local Interfaces = require("utility/interfaces")
+local Events = require("utility/events")
 
 function OrderAudit.CreateGlobals()
     global.Orders.orderAuditTable = global.Orders.orderAuditTable or {}
@@ -12,8 +12,16 @@ end
 function OrderAudit.OnLoad()
     SlotStates = global.StaticData.Orders.slotStates
     Commands.Register("wills_spaceship_repair-write_order_data", {"api-description.wills_spaceship_repair-write_order_data"}, OrderAudit.WriteOutTableCommand, false)
-    Interfaces.RegisterInterface("OrderAudit.LogUpdateOrder", OrderAudit.LogUpdateOrder)
-    Interfaces.RegisterInterface("OrderAudit.LogNewOrder", OrderAudit.LogNewOrder)
+    Events.RegisterHandler("Orders.OrderSlotUpdated", "OrderAudit.OrderUpdated", OrderAudit.OrderUpdated)
+end
+
+function OrderAudit.OrderUpdated(event)
+    local order = event.order
+    if global.Orders.orderAuditMap[order.index] == nil then
+        OrderAudit.LogNewOrder(order)
+    else
+        OrderAudit.LogUpdateOrder(order)
+    end
 end
 
 function OrderAudit.LogNewOrder(order)

@@ -4,7 +4,6 @@ local Utils = require("utility/utils")
 local Events = require("utility/events")
 --local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
-local Interfaces = require("utility/interfaces")
 
 --[[
     global.Orders.orderSlots = {
@@ -166,9 +165,9 @@ end
 function Orders.AddOrderSlot(stateName)
     local slotIndex = #global.Orders.orderSlots + 1
     local order = {index = slotIndex}
-    Orders.SetOrderSlotState(order, stateName, false)
+    Orders.SetOrderSlotState(order, stateName)
     global.Orders.orderSlots[slotIndex] = order
-    Events.RaiseEvent({name = "Orders.OrderSlotAdded", orderSlotIndex = slotIndex})
+    Events.RaiseEvent({name = "Orders.OrderSlotAdded", order = order})
     return order
 end
 
@@ -185,15 +184,14 @@ function Orders.SetOrderSlotState(order, stateName, skipRaiseEvent)
         order.deadlineTime = nil
     end
     if stateName == SlotStates.waitingOrderDecryptionStart.name then
-        global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
         global.playerForce.technologies["wills_spaceship_repair-order_decryption-1"].enabled = true
+        global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
     elseif stateName == SlotStates.waitingItem.name then
         Orders.GenerateOrderInSlot(order)
     end
-    if skipRaiseEvent == nil or skipRaiseEvent == true then
-        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = order.index})
+    if skipRaiseEvent == nil or skipRaiseEvent == false then
+        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", order = order})
     end
-    Interfaces.Call("OrderAudit.LogUpdateOrder", order)
 end
 
 function Orders.OnRocketLaunched(event)
@@ -238,7 +236,7 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
 
     longestWaitingOrder.itemCountDone = longestWaitingOrder.itemCountDone + 1
     if longestWaitingOrder.itemCountDone < longestWaitingOrder.itemCountNeeded then
-        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", orderSlotIndex = longestWaitingOrder.index})
+        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", order = longestWaitingOrder})
         return
     end
 
@@ -265,7 +263,6 @@ function Orders.GenerateOrderInSlot(orderSlot)
     orderSlot.itemCountDone = 0
     orderSlot.startTime = game.tick
     Orders.UpdateOrderSlotDeadlineTimes(orderSlot, game.tick)
-    Interfaces.Call("OrderAudit.LogNewOrder", orderSlot)
 end
 
 function Orders.UpdateAllOrdersSlotDeadlineTimes(event)

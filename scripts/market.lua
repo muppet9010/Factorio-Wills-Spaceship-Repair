@@ -29,7 +29,7 @@ function Market.CreateMarketEntity()
     }
     local pos = Utils.GetValidPositionForEntityNearPosition("market", global.surface, nearSpawnRandomSpot, 20, 5)
     if pos == nil then
-        Logging.Log("ERROR: No valid market at spawn position found")
+        Logging.Log("ERROR: No valid position for market at spawn found")
         return nil
     end
     local entity = global.surface.create_entity {name = "market", position = pos, force = "player"}
@@ -48,7 +48,7 @@ function Market.CreateCoinBoxEntity()
     }
     local pos = Utils.GetValidPositionForEntityNearPosition("logistic-chest-passive-provider", global.surface, nearSpawnRandomSpot, 20, 5)
     if pos == nil then
-        Logging.Log("ERROR: No valid Coin Box at spawn position found")
+        Logging.Log("ERROR: No valid position for Coin Box at spawn found")
         return nil
     end
     local entity = global.surface.create_entity {name = "logistic-chest-passive-provider", position = pos, force = "player"}

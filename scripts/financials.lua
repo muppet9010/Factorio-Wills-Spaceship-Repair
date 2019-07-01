@@ -1,23 +1,8 @@
-local Financials = {}
+local Financials, CoinCapsules = {}
 local Events = require("utility/events")
-local Investments = require("scripts/investments") --TODO
 --local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
-
-Financials.coinCapsules = {
-    ["wills_spaceship_repair-wooden_coin_chest_delivery_capsule"] = {
-        name = "wills_spaceship_repair-wooden_coin_chest_delivery_capsule",
-        value = 1000
-    },
-    ["wills_spaceship_repair-iron_coin_chest_delivery_capsule"] = {
-        name = "wills_spaceship_repair-iron_coin_chest_delivery_capsule",
-        value = 25000
-    },
-    ["wills_spaceship_repair-steel_coin_chest_delivery_capsule"] = {
-        name = "wills_spaceship_repair-steel_coin_chest_delivery_capsule",
-        value = 500000
-    }
-}
+local Interfaces = require("utility/interfaces")
 
 function Financials.CreateGlobals()
     global.Financials = global.Financials or {}
@@ -37,6 +22,7 @@ function Financials.OnStartup()
 end
 
 function Financials.OnLoad()
+    CoinCapsules = global.StaticData.Financials.coinCapsules
     Events.RegisterHandler(defines.events.on_rocket_launched, "Financials", Financials.OnRocketLaunched)
     EventScheduler.RegisterScheduledEventType("Financials.AddWages", Financials.AddWages)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Financials", Financials.UpdateSetting)
@@ -62,14 +48,14 @@ end
 function Financials.OnRocketLaunched(event)
     local rocket = event.rocket
     for name in pairs(rocket.get_inventory(defines.inventory.rocket).get_contents()) do
-        if Financials.coinCapsules[name] ~= nil then
+        if CoinCapsules[name] ~= nil then
             Financials.CoinCapsuleLaunched(name)
         end
     end
 end
 
 function Financials.CoinCapsuleLaunched(name)
-    local capsuleValue = Financials.coinCapsules[name].value
+    local capsuleValue = CoinCapsules[name].value
     global.playerForce.item_production_statistics.on_flow("coin", -capsuleValue)
 
     local wagesOwed = global.Financials.wagesTotal - global.Financials.wagesPaid
@@ -87,7 +73,7 @@ function Financials.CoinCapsuleLaunched(name)
         return
     end
 
-    capsuleValue = Investments.PayInvestors(capsuleValue)
+    capsuleValue = Interfaces.Call("Investments.PayInvestors", capsuleValue)
     if capsuleValue == 0 then
         return
     end

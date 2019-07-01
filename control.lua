@@ -9,11 +9,13 @@ local Market = require("scripts/market")
 local Map = require("scripts/map")
 local OrderAudit = require("scripts/order-audit")
 local EventScheduler = require("utility/event-scheduler")
+local StaticData = require("scripts/static-data")
 
 local function CreateGlobals()
     global.surface = game.surfaces[1]
     global.playerForce = game.forces[1]
     global.playerForce.research_queue_enabled = true
+    global.StaticData = StaticData
     RecruitWorkforce.CreateGlobals()
     Investments.CreateGlobals()
     Orders.CreateGlobals()
@@ -29,6 +31,7 @@ local function OnLoad()
     RecruitWorkforce.OnLoad()
     Investments.OnLoad()
     Orders.OnLoad()
+    OrderAudit.OnLoad()
     Financials.OnLoad()
     Map.OnLoad()
 

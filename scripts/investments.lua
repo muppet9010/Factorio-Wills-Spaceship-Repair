@@ -5,6 +5,7 @@ local Events = require("utility/events")
 local Constants = require("constants")
 local Utils = require("utility/utils")
 local EventScheduler = require("utility/event-scheduler")
+local Interfaces = require("utility/interfaces")
 
 --[[
     global.Investments.investmentsTable = {
@@ -44,6 +45,7 @@ function Investments.OnLoad()
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Investments", Investments.UpdateSetting)
     EventScheduler.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
+    Interfaces.RegisterInterface("Investments.PayInvestors", Investments.PayInvestors)
 end
 
 function Investments.UpdateSetting(event)

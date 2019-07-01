@@ -10,10 +10,9 @@ end
 
 function Interfaces.Call(interfaceName, ...)
     if MOD.interfaces[interfaceName] ~= nil then
-        return MOD.interfaces[interfaceName](unpack(arg))
+        return MOD.interfaces[interfaceName](...)
     else
         error("WARNING: interface called that doesn't exist: " .. interfaceName)
-        MOD.x = ...
     end
 end
 

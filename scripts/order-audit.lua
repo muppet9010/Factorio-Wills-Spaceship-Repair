@@ -1,17 +1,19 @@
-local OrderAudit = {}
-local Orders = {}
+local OrderAudit, SlotStates = {}
 local Commands = require("utility/commands")
 local Constants = require("constants")
 local Utils = require("utility/utils")
+local Interfaces = require("utility/interfaces")
 
 function OrderAudit.CreateGlobals()
     global.Orders.orderAuditTable = global.Orders.orderAuditTable or {}
     global.Orders.orderAuditMap = global.Orders.orderAuditMap or {}
 end
 
-function OrderAudit.OnLoad(slotStates)
-    Orders.slotStates = slotStates
+function OrderAudit.OnLoad()
+    SlotStates = global.StaticData.Orders.slotStates
     Commands.Register("wills_spaceship_repair-write_order_data", {"api-description.wills_spaceship_repair-write_order_data"}, OrderAudit.WriteOutTableCommand, false)
+    Interfaces.RegisterInterface("OrderAudit.LogUpdateOrder", OrderAudit.LogUpdateOrder)
+    Interfaces.RegisterInterface("OrderAudit.LogNewOrder", OrderAudit.LogNewOrder)
 end
 
 function OrderAudit.LogNewOrder(order)
@@ -29,7 +31,7 @@ function OrderAudit.LogNewOrder(order)
 end
 
 function OrderAudit.LogUpdateOrder(order)
-    if order.stateName == Orders.slotStates.orderFailed.name or order.stateName == Orders.slotStates.waitingCustomerDepart.name then
+    if order.stateName == SlotStates.orderFailed.name or order.stateName == SlotStates.waitingCustomerDepart.name then
         local auditIndex = global.Orders.orderAuditMap[order.index]
         local auditOrder = global.Orders.orderAuditTable[auditIndex]
         auditOrder.endedTime = order.startTime

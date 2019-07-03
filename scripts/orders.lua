@@ -171,7 +171,7 @@ function Orders.AddOrderSlot(stateName)
     return order
 end
 
-function Orders.SetOrderSlotState(order, stateName, skipRaiseEvent)
+function Orders.SetOrderSlotState(order, stateName)
     local tick = game.tick
     order.stateName = stateName
     order.item = nil
@@ -189,9 +189,7 @@ function Orders.SetOrderSlotState(order, stateName, skipRaiseEvent)
     elseif stateName == SlotStates.waitingItem.name then
         Orders.GenerateOrderInSlot(order)
     end
-    if skipRaiseEvent == nil or skipRaiseEvent == false then
-        Events.RaiseEvent({name = "Orders.OrderSlotUpdated", order = order})
-    end
+    Events.RaiseEvent({name = "Orders.OrderSlotUpdated", order = order})
 end
 
 function Orders.OnRocketLaunched(event)

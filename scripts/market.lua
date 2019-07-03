@@ -65,7 +65,6 @@ function Market.PopulateMarketItems(market)
     market.add_market_item {price = {{"coin", 200}}, offer = {type = "give-item", item = "modular-armor"}}
     market.add_market_item {price = {{"coin", 1300}}, offer = {type = "give-item", item = "power-armor"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 1}, {"coin", 300}}, offer = {type = "give-item", item = "power-armor"}}
-    market.add_market_item {price = {{"coin", 15000}}, offer = {type = "give-item", item = "power-armor-mk2"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 15}}, offer = {type = "give-item", item = "power-armor-mk2"}}
     market.add_market_item {price = {{"coin", 40}}, offer = {type = "give-item", item = "solar-panel-equipment"}}
     market.add_market_item {price = {{"coin", 6200}}, offer = {type = "give-item", item = "fusion-reactor-equipment"}}

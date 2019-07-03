@@ -222,4 +222,18 @@ function Investments.RecalculateTotals()
     global.Investments.investorsTotal = investorsTotal
 end
 
+function Investments.GetGuiList()
+    local owedInvestments, paidInvestments = {}, {}
+    for _, investment in pairs(global.Investments.investmentsTable) do
+        if investment.owed > 0 then
+            table.insert(owedInvestments, investment)
+        else
+            table.insert(paidInvestments, investment)
+        end
+    end
+    table.sort(owedInvestments, Investments.InvestorsIndexSortedByMaturityTime)
+    table.sort(paidInvestments, Investments.InvestorsIndexSortedByMaturityTime)
+    return owedInvestments, paidInvestments
+end
+
 return Investments

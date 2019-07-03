@@ -24,6 +24,7 @@ function OrderAudit.OrderUpdated(event)
     end
 end
 
+--TODO: where is the item in the output?
 function OrderAudit.LogNewOrder(order)
     local auditIndex = #global.Orders.orderAuditTable + 1
     global.Orders.orderAuditTable[auditIndex] = {
@@ -38,6 +39,7 @@ function OrderAudit.LogNewOrder(order)
     global.Orders.orderAuditMap[order.index] = auditIndex
 end
 
+--TODOL this is based on old startTime update process
 function OrderAudit.LogUpdateOrder(order)
     if order.stateName == SlotStates.orderFailed.name or order.stateName == SlotStates.waitingCustomerDepart.name then
         local auditIndex = global.Orders.orderAuditMap[order.index]

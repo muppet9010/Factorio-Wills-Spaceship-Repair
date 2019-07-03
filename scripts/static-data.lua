@@ -35,7 +35,7 @@ StaticData.Orders.slotStates = {
     },
     waitingCustomerDepart = {
         name = "waitingCustomerDepart",
-        timer = (60 * 60 * 1),
+        timer = (60 * 60 * 10),
         color = {r = 0, g = 255, b = 0, a = 255},
         sortValue = 0
     },

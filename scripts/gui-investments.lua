@@ -3,6 +3,7 @@ local Events = require("utility/events")
 local GuiUtil = require("utility/gui-util")
 --local Logging = require("utility/logging")
 local Utils = require("utility/utils")
+local Investments = require("scripts/investments")
 
 function GuiInvestments.OnLoad()
     Events.RegisterHandler(defines.events.on_lua_shortcut, "GuiInvestments", GuiInvestments.OnLuaShortcut)
@@ -68,32 +69,41 @@ function GuiInvestments.CreateInvestmentsGui(player)
     GuiUtil.AddElement({parent = investmentTable, name = "investments_interest_acquired_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_payment_made_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
     GuiUtil.AddElement({parent = investmentTable, name = "investments_outstanding_debt_column_title", type = "label", caption = "self", style = "muppet_medium_bold_heading"})
-    for _, investment in pairs(global.Investments.investmentsTable) do
-        local color
-        if investment.owed == 0 then
-            color = {r = 0, g = 255, b = 0, a = 255}
-        elseif investment.interestAcquired == 0 then
-            color = {r = 255, g = 255, b = 0, a = 255}
-        else
-            color = {r = 255, g = 0, b = 0, a = 255}
-        end
-        local investorName = GuiUtil.AddElement({parent = investmentTable, name = "investments_investor_" .. investment.index, type = "label", caption = investment.investorName, style = "muppet_semibold_text"})
-        investorName.style.font_color = color
-        local investmentAmount = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.investmentAmount) .. " [img=item/coin]", style = "muppet_semibold_text"})
-        investmentAmount.style.font_color = color
-        local investmentTime = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_time_" .. investment.index, type = "label", caption = Utils.DisplayTimeOfTicks(investment.investmentTick, "hour", "minute"), style = "muppet_semibold_text"})
-        investmentTime.style.font_color = color
-        local investmentDividend = GuiUtil.AddElement({parent = investmentTable, name = "investments_dividend_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.dividend) .. " [img=item/coin]", style = "muppet_semibold_text"})
-        investmentDividend.style.font_color = color
-        local interestAcquired = GuiUtil.AddElement({parent = investmentTable, name = "investments_interest_acquired_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.interestAcquired)) .. " [img=item/coin]", style = "muppet_semibold_text"})
-        interestAcquired.style.font_color = color
-        local paid = GuiUtil.AddElement({parent = investmentTable, name = "investments_payment_made_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.paid)) .. " [img=item/coin]", style = "muppet_semibold_text"})
-        paid.style.font_color = color
-        local debt = GuiUtil.AddElement({parent = investmentTable, name = "investments_outstanding_debt" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.owed)) .. " [img=item/coin]", style = "muppet_semibold_text"})
-        debt.style.font_color = color
+
+    local owedInvestments, paidInvestments = Investments.GetGuiList()
+    for _, investment in pairs(owedInvestments) do
+        GuiInvestments.AddInvestmentToDisplayedList(investment, investmentTable)
+    end
+    for _, investment in pairs(paidInvestments) do
+        GuiInvestments.AddInvestmentToDisplayedList(investment, investmentTable)
     end
 
     player.set_shortcut_toggled("wills_spaceship_repair-investments_gui_button", true)
+end
+
+function GuiInvestments.AddInvestmentToDisplayedList(investment, investmentTable)
+    local color
+    if investment.owed == 0 then
+        color = {r = 0, g = 255, b = 0, a = 255}
+    elseif investment.interestAcquired == 0 then
+        color = {r = 255, g = 255, b = 0, a = 255}
+    else
+        color = {r = 255, g = 0, b = 0, a = 255}
+    end
+    local investorName = GuiUtil.AddElement({parent = investmentTable, name = "investments_investor_" .. investment.index, type = "label", caption = investment.investorName, style = "muppet_semibold_text"})
+    investorName.style.font_color = color
+    local investmentAmount = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.investmentAmount) .. " [img=item/coin]", style = "muppet_semibold_text"})
+    investmentAmount.style.font_color = color
+    local investmentTime = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_time_" .. investment.index, type = "label", caption = Utils.DisplayTimeOfTicks(investment.investmentTick, "hour", "minute"), style = "muppet_semibold_text"})
+    investmentTime.style.font_color = color
+    local investmentDividend = GuiUtil.AddElement({parent = investmentTable, name = "investments_dividend_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.dividend) .. " [img=item/coin]", style = "muppet_semibold_text"})
+    investmentDividend.style.font_color = color
+    local interestAcquired = GuiUtil.AddElement({parent = investmentTable, name = "investments_interest_acquired_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.interestAcquired)) .. " [img=item/coin]", style = "muppet_semibold_text"})
+    interestAcquired.style.font_color = color
+    local paid = GuiUtil.AddElement({parent = investmentTable, name = "investments_payment_made_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.paid)) .. " [img=item/coin]", style = "muppet_semibold_text"})
+    paid.style.font_color = color
+    local debt = GuiUtil.AddElement({parent = investmentTable, name = "investments_outstanding_debt" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(math.floor(investment.owed)) .. " [img=item/coin]", style = "muppet_semibold_text"})
+    debt.style.font_color = color
 end
 
 function GuiInvestments.OnGuiClick(event)

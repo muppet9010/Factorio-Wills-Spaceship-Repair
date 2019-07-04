@@ -56,7 +56,7 @@ StaticData.Orders.shipParts = {
     ["wills_spaceship_repair-hull_component"] = {
         name = "wills_spaceship_repair-hull_component",
         value = 325000,
-        chance = 0.1687,
+        chance = 0,
         multiplePerOrder = {
             {items = 1, chance = 0.6},
             {items = 2, chance = 0.3},
@@ -65,24 +65,14 @@ StaticData.Orders.shipParts = {
     },
     ["wills_spaceship_repair-spaceship_thruster"] = {
         name = "wills_spaceship_repair-spaceship_thruster",
-        value = 80000,
-        chance = 0.1054,
+        value = 865000,
+        chance = 0,
         multiplePerOrder = false
     },
     ["wills_spaceship_repair-fuel_cell"] = {
         name = "wills_spaceship_repair-fuel_cell",
-        value = 450000,
-        chance = 0.1246,
-        multiplePerOrder = {
-            {items = 1, chance = 0.6},
-            {items = 2, chance = 0.3},
-            {items = 3, chance = 0.1}
-        }
-    },
-    ["wills_spaceship_repair-protection_field"] = {
-        name = "wills_spaceship_repair-protection_field",
-        value = 575000,
-        chance = 0.0962,
+        value = 301000,
+        chance = 0,
         multiplePerOrder = {
             {items = 1, chance = 0.6},
             {items = 2, chance = 0.3},
@@ -91,45 +81,66 @@ StaticData.Orders.shipParts = {
     },
     ["wills_spaceship_repair-fusion_reactor"] = {
         name = "wills_spaceship_repair-fusion_reactor",
-        value = 1254000,
-        chance = 0.0668,
+        value = 1222000,
+        chance = 0,
         multiplePerOrder = false
     },
-    ["wills_spaceship_repair-habitation"] = {
-        name = "wills_spaceship_repair-habitation",
-        value = 450000,
-        chance = 0.1218,
+    ["wills_spaceship_repair-life_support"] = {
+        name = "wills_spaceship_repair-life_support",
+        value = 453000,
+        chance = 0,
         multiplePerOrder = {
             {items = 1, chance = 0.6},
             {items = 2, chance = 0.3},
             {items = 3, chance = 0.1}
         }
     },
-    ["wills_spaceship_repair-life_support"] = {
-        name = "wills_spaceship_repair-life_support",
-        value = 780000,
-        chance = 0.1068,
+    ["wills_spaceship_repair-command_systems"] = {
+        name = "wills_spaceship_repair-command_systems",
+        value = 1480000,
+        chance = 0,
         multiplePerOrder = false
     },
-    ["wills_spaceship_repair-command_center"] = {
-        name = "wills_spaceship_repair-command_center",
-        value = 1130000,
-        chance = 0.0734,
+    ["wills_spaceship_repair-point_defence_ammo"] = {
+        name = "wills_spaceship_repair-point_defence_ammo",
+        value = 457000,
+        chance = 0,
+        multiplePerOrder = {
+            {items = 1, chance = 0.6},
+            {items = 2, chance = 0.3},
+            {items = 3, chance = 0.1}
+        }
+    },
+    ["wills_spaceship_repair-point_defence_weapons"] = {
+        name = "wills_spaceship_repair-point_defence_weapons",
+        value = 649000,
+        chance = 0,
         multiplePerOrder = false
     },
-    ["wills_spaceship_repair-astrometrics"] = {
-        name = "wills_spaceship_repair-astrometrics",
-        value = 840000,
-        chance = 0.0991,
+    ["wills_spaceship_repair-main_weapon_system"] = {
+        name = "wills_spaceship_repair-main_weapon_system",
+        value = 998000,
+        chance = 0,
         multiplePerOrder = false
     },
-    ["wills_spaceship_repair-ftl_propulsion_system"] = {
-        name = "wills_spaceship_repair-ftl_propulsion_system",
-        value = 2236000,
-        chance = 0.0367,
+    ["wills_spaceship_repair-shit_ton_of_science"] = {
+        name = "wills_spaceship_repair-shit_ton_of_science",
+        value = 1721000,
+        chance = 0,
         multiplePerOrder = false
     }
 }
+for _, part in pairs(StaticData.Orders.shipParts) do
+    local value = part.value
+    if part.multiplePerOrder ~= false then
+        local multiplier = 0
+        for _, itemChances in ipairs(part.multiplePerOrder) do
+            multiplier = multiplier + (itemChances.items * itemChances.chance)
+        end
+        value = value * multiplier
+    end
+    part.chance = value
+end
 Utils.NormalisedChanceList(StaticData.Orders.shipParts, "chance")
 
 StaticData.Financials = {}

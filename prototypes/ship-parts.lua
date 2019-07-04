@@ -14,6 +14,10 @@ data:extend(
                 },
                 {
                     type = "unlock-recipe",
+                    recipe = "wills_spaceship_repair-hull_panel"
+                },
+                {
+                    type = "unlock-recipe",
                     recipe = "wills_spaceship_repair-spaceship_thruster"
                 },
                 {
@@ -22,7 +26,7 @@ data:extend(
                 },
                 {
                     type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-protection_field"
+                    recipe = "wills_spaceship_repair-point_defence_ammo"
                 },
                 {
                     type = "unlock-recipe",
@@ -30,7 +34,7 @@ data:extend(
                 },
                 {
                     type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-habitation"
+                    recipe = "wills_spaceship_repair-point_defence_weapons"
                 },
                 {
                     type = "unlock-recipe",
@@ -38,15 +42,15 @@ data:extend(
                 },
                 {
                     type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-command_center"
+                    recipe = "wills_spaceship_repair-command_systems"
                 },
                 {
                     type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-astrometrics"
+                    recipe = "wills_spaceship_repair-main_weapon_system"
                 },
                 {
                     type = "unlock-recipe",
-                    recipe = "wills_spaceship_repair-ftl_propulsion_system"
+                    recipe = "wills_spaceship_repair-shit_ton_of_science"
                 }
             },
             prerequisites = {"wills_spaceship_repair-dry_dock-1"},
@@ -72,8 +76,7 @@ data:extend(
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"steel-plate", 10000},
-                {"low-density-structure", 25000}
+                {"wills_spaceship_repair-hull_panel", 10}
             },
             result = "wills_spaceship_repair-hull_component",
             requester_paste_multiplier = 1
@@ -81,6 +84,28 @@ data:extend(
         {
             type = "item",
             name = "wills_spaceship_repair-hull_component",
+            icon = Constants.AssetModName .. "/graphics/spacex/icons/habitation.png",
+            icon_size = 32,
+            subgroup = "wills_spaceship_repair",
+            stack_size = 1,
+            order = "2000"
+        },
+        {
+            type = "recipe",
+            name = "wills_spaceship_repair-hull_panel",
+            energy_required = 60,
+            enabled = false,
+            category = "crafting",
+            ingredients = {
+                {"steel-plate", 1000},
+                {"low-density-structure", 2500}
+            },
+            result = "wills_spaceship_repair-hull_panel",
+            requester_paste_multiplier = 1
+        },
+        {
+            type = "item",
+            name = "wills_spaceship_repair-hull_panel",
             icon = Constants.AssetModName .. "/graphics/spacex/icons/hull-component.png",
             icon_size = 32,
             subgroup = "wills_spaceship_repair",
@@ -94,10 +119,9 @@ data:extend(
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"processing-unit", 1000},
-                {"electric-engine-unit", 1000},
-                {"low-density-structure", 1000},
-                {"pipe", 1000},
+                {"wills_spaceship_repair-hull_panel", 1},
+                {"electric-engine-unit", 5000},
+                {"heat-exchanger", 1000},
                 {"speed-module-3", 500}
             },
             result = "wills_spaceship_repair-spaceship_thruster",
@@ -119,9 +143,7 @@ data:extend(
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"steel-plate", 10000},
-                {"processing-unit", 10000},
-                {"low-density-structure", 10000},
+                {"heat-pipe", 6000},
                 {"uranium-fuel-cell", 25000}
             },
             result = "wills_spaceship_repair-fuel_cell",
@@ -138,33 +160,13 @@ data:extend(
         },
         {
             type = "recipe",
-            name = "wills_spaceship_repair-protection_field",
-            energy_required = 60,
-            enabled = false,
-            category = "crafting",
-            ingredients = {
-                {"energy-shield-mk2-equipment", 10000}
-            },
-            result = "wills_spaceship_repair-protection_field",
-            requester_paste_multiplier = 1
-        },
-        {
-            type = "item",
-            name = "wills_spaceship_repair-protection_field",
-            icon = Constants.AssetModName .. "/graphics/spacex/icons/protection-field.png",
-            icon_size = 32,
-            subgroup = "wills_spaceship_repair",
-            stack_size = 1,
-            order = "2000"
-        },
-        {
-            type = "recipe",
             name = "wills_spaceship_repair-fusion_reactor",
             energy_required = 60,
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"fusion-reactor-equipment", 200}
+                {"processing-unit", 3000},
+                {"nuclear-reactor", 350}
             },
             result = "wills_spaceship_repair-fusion_reactor",
             requester_paste_multiplier = 1
@@ -180,39 +182,15 @@ data:extend(
         },
         {
             type = "recipe",
-            name = "wills_spaceship_repair-habitation",
-            energy_required = 60,
-            enabled = false,
-            category = "crafting",
-            ingredients = {
-                {"steel-plate", 10000},
-                {"plastic-bar", 50000},
-                {"processing-unit", 10000},
-                {"low-density-structure", 10000}
-            },
-            result = "wills_spaceship_repair-habitation",
-            requester_paste_multiplier = 1
-        },
-        {
-            type = "item",
-            name = "wills_spaceship_repair-habitation",
-            icon = Constants.AssetModName .. "/graphics/spacex/icons/habitation.png",
-            icon_size = 32,
-            subgroup = "wills_spaceship_repair",
-            stack_size = 1,
-            order = "2000"
-        },
-        {
-            type = "recipe",
             name = "wills_spaceship_repair-life_support",
             energy_required = 60,
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"processing-unit", 1000},
-                {"low-density-structure", 1000},
-                {"pipe", 2000},
-                {"productivity-module-3", 500}
+                {"heat-exchanger", 3000},
+                {"heat-pipe", 3000},
+                {"lab", 3000},
+                {"steam-turbine", 3000}
             },
             result = "wills_spaceship_repair-life_support",
             requester_paste_multiplier = 1
@@ -228,24 +206,25 @@ data:extend(
         },
         {
             type = "recipe",
-            name = "wills_spaceship_repair-command_center",
+            name = "wills_spaceship_repair-command_systems",
             energy_required = 60,
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"plastic-bar", 1000},
                 {"processing-unit", 500},
-                {"low-density-structure", 500},
-                {"productivity-module-3", 250},
-                {"speed-module-3", 250},
-                {"effectivity-module-3", 250}
+                {"satellite", 250},
+                {"arithmetic-combinator", 1000},
+                {"decider-combinator", 1000},
+                {"constant-combinator", 1000},
+                {"red-wire", 1000},
+                {"green-wire", 1000}
             },
-            result = "wills_spaceship_repair-command_center",
+            result = "wills_spaceship_repair-command_systems",
             requester_paste_multiplier = 1
         },
         {
             type = "item",
-            name = "wills_spaceship_repair-command_center",
+            name = "wills_spaceship_repair-command_systems",
             icon = Constants.AssetModName .. "/graphics/spacex/icons/command.png",
             icon_size = 32,
             subgroup = "wills_spaceship_repair",
@@ -254,47 +233,93 @@ data:extend(
         },
         {
             type = "recipe",
-            name = "wills_spaceship_repair-astrometrics",
+            name = "wills_spaceship_repair-point_defence_ammo",
             energy_required = 60,
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"processing-unit", 3000},
-                {"low-density-structure", 1000},
-                {"speed-module-3", 500}
+                {"uranium-rounds-magazine", 10000},
+                {"explosive-rocket", 10000},
+                {"cluster-grenade", 10000}
             },
-            result = "wills_spaceship_repair-astrometrics",
+            result = "wills_spaceship_repair-point_defence_ammo",
             requester_paste_multiplier = 1
         },
         {
             type = "item",
-            name = "wills_spaceship_repair-astrometrics",
-            icon = Constants.AssetModName .. "/graphics/spacex/icons/astrometrics.png",
-            icon_size = 32,
+            name = "wills_spaceship_repair-point_defence_ammo",
+            icon = "__base__/graphics/technology/weapon-shooting-speed-2.png",
+            icon_size = 128,
             subgroup = "wills_spaceship_repair",
             stack_size = 1,
             order = "2000"
         },
         {
             type = "recipe",
-            name = "wills_spaceship_repair-ftl_propulsion_system",
+            name = "wills_spaceship_repair-point_defence_weapons",
             energy_required = 60,
             enabled = false,
             category = "crafting",
             ingredients = {
-                {"processing-unit", 500},
-                {"low-density-structure", 100},
-                {"productivity-module-3", 500},
-                {"speed-module-3", 500},
-                {"effectivity-module-3", 500}
+                {"gun-turret", 6000},
+                {"laser-turret", 6000}
             },
-            result = "wills_spaceship_repair-ftl_propulsion_system",
+            result = "wills_spaceship_repair-point_defence_weapons",
             requester_paste_multiplier = 1
         },
         {
             type = "item",
-            name = "wills_spaceship_repair-ftl_propulsion_system",
-            icon = Constants.AssetModName .. "/graphics/spacex/icons/ftl-drive.png",
+            name = "wills_spaceship_repair-point_defence_weapons",
+            icon = "__base__/graphics/technology/turrets.png",
+            icon_size = 128,
+            subgroup = "wills_spaceship_repair",
+            stack_size = 1,
+            order = "2000"
+        },
+        {
+            type = "recipe",
+            name = "wills_spaceship_repair-main_weapon_system",
+            energy_required = 60,
+            enabled = false,
+            category = "crafting",
+            ingredients = {
+                {"artillery-turret", 750},
+                {"artillery-shell", 20000}
+            },
+            result = "wills_spaceship_repair-main_weapon_system",
+            requester_paste_multiplier = 1
+        },
+        {
+            type = "item",
+            name = "wills_spaceship_repair-main_weapon_system",
+            icon = "__base__/graphics/technology/artillery.png",
+            icon_size = 128,
+            subgroup = "wills_spaceship_repair",
+            stack_size = 1,
+            order = "2000"
+        },
+        {
+            type = "recipe",
+            name = "wills_spaceship_repair-shit_ton_of_science",
+            energy_required = 60,
+            enabled = false,
+            category = "crafting",
+            ingredients = {
+                {"automation-science-pack", 10000},
+                {"logistic-science-pack", 10000},
+                {"military-science-pack", 10000},
+                {"chemical-science-pack", 10000},
+                {"production-science-pack", 10000},
+                {"utility-science-pack", 10000},
+                {"space-science-pack", 10000}
+            },
+            result = "wills_spaceship_repair-shit_ton_of_science",
+            requester_paste_multiplier = 1
+        },
+        {
+            type = "item",
+            name = "wills_spaceship_repair-shit_ton_of_science",
+            icon = Constants.AssetModName .. "/graphics/icons/all_science.png",
             icon_size = 32,
             subgroup = "wills_spaceship_repair",
             stack_size = 1,

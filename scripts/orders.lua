@@ -75,7 +75,7 @@ function Orders.GetOrderGuiState(orderIndex)
     if order.stateName == SlotStates.waitingCapacityTech.name or order.stateName == SlotStates.waitingDrydock.name or order.stateName == SlotStates.waitingOrderDecryptionStart.name or order.stateName == SlotStates.waitingOrderDecryptionEnd.name or order.stateName == SlotStates.waitingCustomerDepart.name or order.stateName == SlotStates.orderFailed.name then
         statusText = {"gui-text." .. Constants.ModName .. "-slotState-" .. order.stateName}
     elseif order.stateName == SlotStates.waitingItem.name then
-        statusText = {"item-name-short." .. order.item}
+        statusText = {"item-name." .. order.item}
         if order.itemCountNeeded > 1 then
             statusCountText = " (" .. order.itemCountDone .. " / " .. order.itemCountNeeded .. ")"
         end
@@ -193,7 +193,7 @@ function Orders.SetOrderSlotState(order, stateName)
         if order.itemCountNeeded > 1 then
             itemCountNeededString = order.itemCountNeeded .. " "
         end
-        local localisedItemDisplayName = {"misc.wills_spaceship_repair-double", itemCountNeededString, {"item-name-short." .. order.item}}
+        local localisedItemDisplayName = {"misc.wills_spaceship_repair-double", itemCountNeededString, {"item-name." .. order.item}}
         Interfaces.Call("Investments.AddInvestment", "Missed Order Penalty", itemValue / global.Investments.dividendsmultiplier, 1)
         game.print({"message.wills_spaceship_repair-order_failed_penalty", localisedItemDisplayName, itemValue})
     end

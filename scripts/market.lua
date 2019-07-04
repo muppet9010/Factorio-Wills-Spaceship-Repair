@@ -62,23 +62,22 @@ function Market.CreateCoinBoxEntity()
 end
 
 function Market.PopulateMarketItems(market)
-    market.add_market_item {price = {{"coin", 200}}, offer = {type = "give-item", item = "modular-armor"}}
+    market.add_market_item {price = {{"coin", 210}}, offer = {type = "give-item", item = "modular-armor"}}
     market.add_market_item {price = {{"coin", 1300}}, offer = {type = "give-item", item = "power-armor"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 1}, {"coin", 300}}, offer = {type = "give-item", item = "power-armor"}}
-    market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 15}}, offer = {type = "give-item", item = "power-armor-mk2"}}
+    market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 16}}, offer = {type = "give-item", item = "power-armor-mk2"}}
     market.add_market_item {price = {{"coin", 40}}, offer = {type = "give-item", item = "solar-panel-equipment"}}
-    market.add_market_item {price = {{"coin", 6200}}, offer = {type = "give-item", item = "fusion-reactor-equipment"}}
-    market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 6}, {"coin", 200}}, offer = {type = "give-item", item = "fusion-reactor-equipment"}}
+    market.add_market_item {price = {{"coin", 6400}}, offer = {type = "give-item", item = "fusion-reactor-equipment"}}
+    market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 6}, {"coin", 400}}, offer = {type = "give-item", item = "fusion-reactor-equipment"}}
     market.add_market_item {price = {{"coin", 40}}, offer = {type = "give-item", item = "energy-shield-equipment"}}
-    market.add_market_item {price = {{"coin", 5700}}, offer = {type = "give-item", item = "energy-shield-mk2-equipment"}}
+    market.add_market_item {price = {{"coin", 585}}, offer = {type = "give-item", item = "energy-shield-mk2-equipment"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 5}, {"coin", 700}}, offer = {type = "give-item", item = "energy-shield-mk2-equipment"}}
     market.add_market_item {price = {{"coin", 30}}, offer = {type = "give-item", item = "battery-equipment"}}
-    market.add_market_item {price = {{"coin", 750}}, offer = {type = "give-item", item = "battery-mk2-equipment"}}
-    market.add_market_item {price = {{"coin", 1000}}, offer = {type = "give-item", item = "personal-laser-defense-equipment"}}
-    market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 1}}, offer = {type = "give-item", item = "personal-laser-defense-equipment"}}
-    market.add_market_item {price = {{"coin", 500}}, offer = {type = "give-item", item = "exoskeleton-equipment"}}
-    market.add_market_item {price = {{"coin", 200}}, offer = {type = "give-item", item = "personal-roboport-equipment"}}
-    market.add_market_item {price = {{"coin", 4000}}, offer = {type = "give-item", item = "personal-roboport-mk2-equipment"}}
+    market.add_market_item {price = {{"coin", 830}}, offer = {type = "give-item", item = "battery-mk2-equipment"}}
+    market.add_market_item {price = {{"coin", 1100}}, offer = {type = "give-item", item = "personal-laser-defense-equipment"}}
+    market.add_market_item {price = {{"coin", 520}}, offer = {type = "give-item", item = "exoskeleton-equipment"}}
+    market.add_market_item {price = {{"coin", 250}}, offer = {type = "give-item", item = "personal-roboport-equipment"}}
+    market.add_market_item {price = {{"coin", 4400}}, offer = {type = "give-item", item = "personal-roboport-mk2-equipment"}}
     market.add_market_item {price = {{"wills_spaceship_repair-wooden_coin_chest", 4}}, offer = {type = "give-item", item = "personal-roboport-mk2-equipment"}}
     market.add_market_item {price = {{"coin", 40}}, offer = {type = "give-item", item = "night-vision-equipment"}}
     market.add_market_item {price = {{"coin", 40}}, offer = {type = "give-item", item = "belt-immunity-equipment"}}

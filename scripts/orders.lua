@@ -4,6 +4,7 @@ local Utils = require("utility/utils")
 local Events = require("utility/events")
 --local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
+local Interfaces = require("utility/interfaces")
 
 --[[
     global.Orders.orderSlots = {
@@ -92,7 +93,7 @@ function Orders.GetOrderGuiTime(orderIndex)
         if timeBonus.modifierPercent >= 0 then
             timeBonusText = "+" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
         else
-            timeBonusText = "-" .. tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
+            timeBonusText = tostring(timeBonus.modifierPercent) .. "% [img=item/coin]"
         end
     elseif order.stateName == SlotStates.waitingCustomerDepart.name then
         timeTicks = order.deadlineTime - game.tick
@@ -174,21 +175,29 @@ end
 function Orders.SetOrderSlotState(order, stateName)
     local tick = game.tick
     order.stateName = stateName
-    order.item = nil
-    order.itemCountNeeded = nil
-    order.itemCountDone = nil
     order.startTime = tick
     if SlotStates[stateName].timer ~= nil then
         order.deadlineTime = tick + SlotStates[stateName].timer
     else
         order.deadlineTime = nil
     end
+
     if stateName == SlotStates.waitingOrderDecryptionStart.name then
         global.playerForce.technologies["wills_spaceship_repair-order_decryption-1"].enabled = true
         global.playerForce.add_research("wills_spaceship_repair-order_decryption-1")
     elseif stateName == SlotStates.waitingItem.name then
         Orders.GenerateOrderInSlot(order)
+    elseif stateName == SlotStates.orderFailed.name then
+        local itemValue = ShipParts[order.item].value
+        local itemCountNeededString = ""
+        if order.itemCountNeeded > 1 then
+            itemCountNeededString = order.itemCountNeeded .. " "
+        end
+        local localisedItemDisplayName = {"misc.wills_spaceship_repair-double", itemCountNeededString, {"item-name-short." .. order.item}}
+        Interfaces.Call("Investments.AddInvestment", "Missed Order Penalty", itemValue / global.Investments.dividendsmultiplier, 1)
+        game.print({"message.wills_spaceship_repair-order_failed_penalty", localisedItemDisplayName, itemValue})
     end
+
     Events.RaiseEvent({name = "Orders.OrderSlotUpdated", order = order})
 end
 

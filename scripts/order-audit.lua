@@ -12,36 +12,24 @@ end
 function OrderAudit.OnLoad()
     SlotStates = global.StaticData.Orders.slotStates
     Commands.Register("wills_spaceship_repair-write_order_data", {"api-description.wills_spaceship_repair-write_order_data"}, OrderAudit.WriteOutTableCommand, false)
-    Events.RegisterHandler("Orders.OrderSlotUpdated", "OrderAudit.OrderUpdated", OrderAudit.OrderUpdated)
+    Events.RegisterHandler("Orders.OrderSlotUpdated", "OrderAudit.LogOrder", OrderAudit.LogOrder)
 end
 
-function OrderAudit.OrderUpdated(event)
+function OrderAudit.LogOrder(event)
     local order = event.order
-    if global.Orders.orderAuditMap[order.index] == nil then
-        OrderAudit.LogNewOrder(order)
-    else
-        OrderAudit.LogUpdateOrder(order)
-    end
-end
-
---TODO: where is the item in the output?
-function OrderAudit.LogNewOrder(order)
-    local auditIndex = #global.Orders.orderAuditTable + 1
-    global.Orders.orderAuditTable[auditIndex] = {
-        orderSlot = order.index,
-        auditIndex = auditIndex,
-        item = order.item,
-        itemCountNeeded = order.itemCountNeeded,
-        startTime = order.startTime,
-        endedTime = "",
-        stateName = order.stateName
-    }
-    global.Orders.orderAuditMap[order.index] = auditIndex
-end
-
---TODOL this is based on old startTime update process
-function OrderAudit.LogUpdateOrder(order)
-    if order.stateName == SlotStates.orderFailed.name or order.stateName == SlotStates.waitingCustomerDepart.name then
+    if order.stateName == SlotStates.waitingItem.name then
+        local auditIndex = #global.Orders.orderAuditTable + 1
+        global.Orders.orderAuditTable[auditIndex] = {
+            orderSlot = order.index,
+            auditIndex = auditIndex,
+            item = order.item,
+            itemCountNeeded = order.itemCountNeeded,
+            startTime = order.startTime,
+            endedTime = "",
+            stateName = order.stateName
+        }
+        global.Orders.orderAuditMap[order.index] = auditIndex
+    elseif order.stateName == SlotStates.orderFailed.name or order.stateName == SlotStates.waitingCustomerDepart.name then
         local auditIndex = global.Orders.orderAuditMap[order.index]
         local auditOrder = global.Orders.orderAuditTable[auditIndex]
         auditOrder.endedTime = order.startTime

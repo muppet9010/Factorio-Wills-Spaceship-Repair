@@ -46,6 +46,7 @@ function Investments.OnLoad()
     EventScheduler.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
     Interfaces.RegisterInterface("Investments.PayInvestors", Investments.PayInvestors)
+    Interfaces.RegisterInterface("Investments.AddInvestment", Investments.AddInvestment)
 end
 
 function Investments.UpdateSetting(event)
@@ -70,7 +71,6 @@ function Investments.UpdateSetting(event)
 end
 
 function Investments.AddInvestmentCommand(command)
-    local tick = command.tick
     local args = Commands.GetArgumentsFromCommand(command.parameter)
     local investorName = args[1]
     if investorName == nil or investorName == "" then
@@ -92,9 +92,27 @@ function Investments.AddInvestmentCommand(command)
         return
     end
 
+    Investments.AddViewerInvestment(investorName, investorAmount)
+end
+
+function Investments.AddViewerInvestment(investorName, investorAmount)
+    local investment = Investments.AddInvestment(investorName, investorAmount, global.Investments.maturityTicks)
+
+    global.playerForce.item_production_statistics.on_flow("coin", investment.instantCash)
+    global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit + investment.dividend
+    local coinCount = investment.instantCash
+    coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
+    if coinCount > 0 then
+        global.Market.coinBoxEntity.surface.spill_item_stack(global.Market.coinBoxEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+    end
+    game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
+end
+
+function Investments.AddInvestment(investorName, investorAmount, maturityDelay)
+    local tick = game.tick
     local investmentIndex = #global.Investments.investmentsTable + 1
     local dividend = math.floor(investorAmount * global.Investments.dividendsmultiplier)
-    local maturityTick = tick + global.Investments.maturityTicks
+    local maturityTick = tick + maturityDelay
     local instantCash = math.floor(investorAmount * global.Investments.cashmultiplier)
     local investment = {
         index = investmentIndex,
@@ -112,15 +130,7 @@ function Investments.AddInvestmentCommand(command)
     global.Investments.investmentsTable[investmentIndex] = investment
     global.Investments.investorsTotal = global.Investments.investorsTotal + dividend
     EventScheduler.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
-    game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
-    global.playerForce.item_production_statistics.on_flow("coin", instantCash)
-    global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit + dividend
-
-    local coinCount = instantCash
-    coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
-    if coinCount > 0 then
-        global.Market.coinBoxEntity.surface.spill_item_stack(global.Market.coinBoxEntity.position, {name = "coin", count = coinCount}, true, nil, true)
-    end
+    return investment
 end
 
 function Investments.PayInvestors(amount)

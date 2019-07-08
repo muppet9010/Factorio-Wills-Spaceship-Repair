@@ -11,10 +11,21 @@ local OrderAudit = require("scripts/order-audit")
 local EventScheduler = require("utility/event-scheduler")
 local StaticData = require("scripts/static-data")
 
+local function UpdateSetting(event)
+    local settingName
+    if event ~= nil then
+        settingName = event.setting
+    end
+    if settingName == "wills_spaceship_repair-primary_player_name" or settingName == nil then
+        global.primaryPlayerName = settings.global["wills_spaceship_repair-primary_player_name"].value
+    end
+end
+
 local function CreateGlobals()
     global.surface = game.surfaces[1]
     global.playerForce = game.forces[1]
     global.playerForce.research_queue_enabled = true
+    global.primaryPlayerName = global.primaryPlayerName or "YOUR NAME HERE"
     global.StaticData = StaticData
     RecruitWorkforce.CreateGlobals()
     Investments.CreateGlobals()
@@ -27,6 +38,8 @@ local function CreateGlobals()
 end
 
 local function OnLoad()
+    Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "control", UpdateSetting)
+
     Utils.DisableSiloScript()
     RecruitWorkforce.OnLoad()
     Investments.OnLoad()
@@ -40,6 +53,7 @@ end
 
 local function OnStartup()
     CreateGlobals()
+    UpdateSetting(nil)
 
     Utils.DisableIntroMessage()
     Utils.DisableWinOnRocket()

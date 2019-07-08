@@ -14,7 +14,7 @@ function Market.OnStartup()
         end
         Market.PopulateMarketItems(global.Market.marketEntity)
     end
-    if global.Market.coinBoxEntity == nil then
+    if (remote.interfaces["item_delivery_pod"] == nil or remote.interfaces["item_delivery_pod"]["call_crash_ship"] == nil) and global.Market.coinBoxEntity == nil then
         global.Market.coinBoxEntity = Market.CreateCoinBoxEntity()
         if global.Market.coinBoxEntity == nil then
             return

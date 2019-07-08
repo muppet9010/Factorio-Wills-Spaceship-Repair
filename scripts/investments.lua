@@ -34,6 +34,8 @@ function Investments.CreateGlobals()
     global.Investments.hourlyInterestRate = global.Investments.hourlyInterestRate or 0
     global.Investments.investorsPaid = global.Investments.investorsPaid or 0
     global.Investments.investorsTotal = global.Investments.investorsTotal or 0
+    global.Investments.deliveryPodSizeCoinMinimums = global.Investments.deliveryPodSizeCoinMinimums or {}
+    global.Investments.deliveryPodModularPartCost = global.Investments.deliveryPodModularPartCost or 1
 end
 
 function Investments.OnStartup()
@@ -68,27 +70,34 @@ function Investments.UpdateSetting(event)
         global.Investments.hourlyInterestRate = tonumber(settings.global["wills_spaceship_repair-matured_investment_dividend_hourly_interest"].value) / 100
         Investments.MaturedInvestmentHourlyInterestRateChanged()
     end
+    if settingName == "wills_spaceship_repair-matured_investment_dividend_hourly_interest" or settingName == nil then
+        global.Investments.hourlyInterestRate = tonumber(settings.global["wills_spaceship_repair-matured_investment_dividend_hourly_interest"].value) / 100
+        Investments.MaturedInvestmentHourlyInterestRateChanged()
+    end
+    if settingName == "wills_spaceship_repair-item_delivery_pod_size_cash_values" or settingName == nil then
+        Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(settings.global["wills_spaceship_repair-item_delivery_pod_size_cash_values"].value)
+    end
 end
 
 function Investments.AddInvestmentCommand(command)
     local args = Commands.GetArgumentsFromCommand(command.parameter)
     local investorName = args[1]
     if investorName == nil or investorName == "" then
-        game.print("Investor name can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print("ERROR: Investor name can not be blank in Add Investor command arguments: " .. command.parameter)
         return
     end
     local investorAmount = args[2]
     if investorAmount == nil or investorAmount == "" then
-        game.print("Investor amount can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print("ERROR: Investor amount can not be blank in Add Investor command arguments: " .. command.parameter)
         return
     end
     investorAmount = tonumber(investorAmount)
     if investorAmount == nil or math.floor(investorAmount) ~= investorAmount then
-        game.print("Investor amount must be a whole number for Add Investor command arguments: " .. command.parameter)
+        game.print("ERROR: Investor amount must be a whole number for Add Investor command arguments: " .. command.parameter)
         return
     end
     if args[3] ~= nil then
-        game.print("Too many arguments to command Add Investor: " .. command.parameter)
+        game.print("ERROR: Too many arguments to command Add Investor: " .. command.parameter)
         return
     end
 
@@ -101,11 +110,29 @@ function Investments.AddViewerInvestment(investorName, investorAmount)
     global.playerForce.item_production_statistics.on_flow("coin", investment.instantCash)
     global.Financials.bankruptcyLimit = global.Financials.bankruptcyLimit + investment.dividend
     local coinCount = investment.instantCash
-    coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
-    if coinCount > 0 then
-        global.Market.coinBoxEntity.surface.spill_item_stack(global.Market.coinBoxEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+
+    if remote.interfaces["item_delivery_pod"] ~= nil and remote.interfaces["item_delivery_pod"]["call_crash_ship"] ~= nil then
+        local targetPlayer = global.primaryPlayerName
+        local contents = {coin = coinCount}
+        local radius, shipSize
+        for _, shipCostEntry in pairs(global.Investments.deliveryPodSizeCoinMinimums) do
+            if coinCount >= shipCostEntry.coinCost then
+                shipSize = shipCostEntry.shipSize
+                radius = shipCostEntry.radius
+                break
+            end
+        end
+        if shipSize == "modular" then
+            local modularBits = math.floor(coinCount / global.Investments.deliveryPodModularPartCost)
+            shipSize = shipSize .. modularBits
+        end
+        remote.call("item_delivery_pod", "call_crash_ship", targetPlayer, radius, shipSize, contents)
+    else
+        coinCount = coinCount - global.Market.coinBoxEntity.insert({name = "coin", count = coinCount})
+        if coinCount > 0 then
+            global.Market.coinBoxEntity.surface.spill_item_stack(global.Market.coinBoxEntity.position, {name = "coin", count = coinCount}, true, nil, true)
+        end
     end
-    game.print({"message.wills_spaceship_repair-investment_added", investorName, investorAmount})
 end
 
 function Investments.AddInvestment(investorName, investorAmount, maturityDelay)
@@ -244,6 +271,44 @@ function Investments.GetGuiList()
     table.sort(owedInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     table.sort(paidInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     return owedInvestments, paidInvestments
+end
+
+function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPodSizeCoinMinimumsString)
+    local deliveryPodSizeCoinMinimums = game.json_to_table(deliveryPodSizeCoinMinimumsString)
+    global.Investments.deliveryPodSizeCoinMinimums = {}
+    if deliveryPodSizeCoinMinimums == nil then
+        game.print("ERROR: Invalid table given for setting: Item delivery pod size cash values")
+        return
+    end
+    for _, details in pairs(deliveryPodSizeCoinMinimums) do
+        if details.shipSize == nil or type(details.shipSize) ~= "string" then
+            game.print("ERROR: setting Item delivery pod size cash values missing/invalid shipSize")
+            return
+        elseif details.coinCost == nil or type(details.coinCost) ~= "number" then
+            game.print("ERROR: setting Item delivery pod size cash values missing/invalid coinCost")
+            return
+        end
+
+        if details.shipSize == "modular-part" then
+            global.Investments.deliveryPodModularPartCost = details.coinCost
+        else
+            if details.radius == nil or type(details.radius) ~= "number" then
+                game.print("ERROR: setting Item delivery pod size cash values missing/invalid radius")
+                return
+            end
+            table.insert(global.Investments.deliveryPodSizeCoinMinimums, {coinCost = details.coinCost, shipSize = details.shipSize, radius = details.radius})
+        end
+    end
+    table.sort(
+        global.Investments.deliveryPodSizeCoinMinimums,
+        function(a, b)
+            if a.coinCost < b.coinCost then
+                return false
+            else
+                return true
+            end
+        end
+    )
 end
 
 return Investments

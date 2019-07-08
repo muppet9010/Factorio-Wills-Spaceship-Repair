@@ -8,7 +8,8 @@
     "factorio_version": "0.17",
     "dependencies": [
         "base >= 0.17.53",
-        "Rocket-Silo-Construction >= 0.17.7"
+        "Rocket-Silo-Construction >= 0.17.7",
+        "?item_delivery_pod"
     ],
     "description": "Will runs a spaceship repair business"
 }

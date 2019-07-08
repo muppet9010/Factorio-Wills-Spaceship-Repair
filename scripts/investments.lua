@@ -201,6 +201,9 @@ function Investments.AddInterest(event)
     local tick = event.tick
     local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
+    if investment.owed <= 0 then
+        return
+    end
     local interest = math.floor(investment.owed * global.Investments.hourlyInterestRate)
     investment.interestAcquired = investment.interestAcquired + interest
     investment.owed = investment.owed + interest

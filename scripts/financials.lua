@@ -17,7 +17,9 @@ function Financials.CreateGlobals()
 end
 
 function Financials.OnStartup()
-    EventScheduler.ScheduleEvent(3600, "Financials.AddWages")
+    if not EventScheduler.IsEventScheduled("Financials.AddWages") then
+        EventScheduler.ScheduleEvent(3600, "Financials.AddWages")
+    end
     Financials.UpdateSetting(nil)
 end
 

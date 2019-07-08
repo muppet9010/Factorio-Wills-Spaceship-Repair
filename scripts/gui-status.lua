@@ -11,7 +11,9 @@ function GuiStatus.CreateGlobals()
 end
 
 function GuiStatus.OnStartup()
-    EventScheduler.ScheduleEvent(60, "GuiStatus.OnSecondUpdate")
+    if not EventScheduler.IsEventScheduled("GuiStatus.OnSecondUpdate") then
+        EventScheduler.ScheduleEvent(60, "GuiStatus.OnSecondUpdate")
+    end
     GuiStatus.UpdateSetting(nil)
 end
 

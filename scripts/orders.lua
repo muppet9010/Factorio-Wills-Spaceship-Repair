@@ -26,7 +26,9 @@ function Orders.CreateGlobals()
 end
 
 function Orders.OnStartup()
-    EventScheduler.ScheduleEvent(60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
+    if not EventScheduler.IsEventScheduled("Orders.CheckAllOrdersSlotDeadlineTimes") then
+        EventScheduler.ScheduleEvent(60, "Orders.CheckAllOrdersSlotDeadlineTimes")
+    end
 end
 
 function Orders.OnLoad()
@@ -36,7 +38,7 @@ function Orders.OnLoad()
     Events.RegisterHandler(defines.events.on_research_finished, "Orders", Orders.OnResearchFinished)
     Events.RegisterHandler(defines.events.on_rocket_launched, "Orders", Orders.OnRocketLaunched)
     Events.RegisterHandler(defines.events.on_research_started, "Orders", Orders.OnResearchStarted)
-    EventScheduler.RegisterScheduledEventType("Orders.UpdateAllOrdersSlotDeadlineTimes", Orders.UpdateAllOrdersSlotDeadlineTimes)
+    EventScheduler.RegisterScheduledEventType("Orders.CheckAllOrdersSlotDeadlineTimes", Orders.CheckAllOrdersSlotDeadlineTimes)
     Events.RegisterEvent("Orders.OrderSlotAdded")
     Events.RegisterEvent("Orders.OrderSlotUpdated")
 end
@@ -269,20 +271,19 @@ function Orders.GenerateOrderInSlot(orderSlot)
     end
     orderSlot.itemCountDone = 0
     orderSlot.startTime = game.tick
-    Orders.UpdateOrderSlotDeadlineTimes(orderSlot, game.tick)
 end
 
-function Orders.UpdateAllOrdersSlotDeadlineTimes(event)
+function Orders.CheckAllOrdersSlotDeadlineTimes(event)
     local tick = event.tick
-    EventScheduler.ScheduleEvent(tick + 60, "Orders.UpdateAllOrdersSlotDeadlineTimes")
+    EventScheduler.ScheduleEvent(tick + 60, "Orders.CheckAllOrdersSlotDeadlineTimes")
     for _, order in pairs(global.Orders.orderSlots) do
         if order.deadlineTime ~= nil then
-            Orders.UpdateOrderSlotDeadlineTimes(order, tick)
+            Orders.CheckOrderSlotDeadlineTime(order, tick)
         end
     end
 end
 
-function Orders.UpdateOrderSlotDeadlineTimes(order, tick)
+function Orders.CheckOrderSlotDeadlineTime(order, tick)
     if order.stateName == SlotStates.waitingItem.name then
         if tick >= order.deadlineTime then
             Orders.SetOrderSlotState(order, SlotStates.orderFailed.name)

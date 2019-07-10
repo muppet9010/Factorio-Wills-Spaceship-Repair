@@ -241,7 +241,7 @@ function Map.MakeEntityAtPosition(region, position, entryType)
     local regionEntry = region[entryName]
     local entityPrototype = game.entity_prototypes[regionEntry.prototypeName]
     local entityFootprint = Utils.ApplyBoundingBoxToPosition(position, entityPrototype.collision_box)
-    Utils.KillAllObjectsInArea(global.surface, entityFootprint)
+    Utils.DestroyAllObjectsInArea(global.surface, entityFootprint)
 
     local entity = global.surface.create_entity {name = regionEntry.prototypeName, position = position, force = "player"}
     if entity == nil then

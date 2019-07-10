@@ -32,7 +32,7 @@ data:extend(
         {
             type = "recipe",
             name = "wills_spaceship_repair-wooden_coin_chest",
-            energy_required = 60,
+            energy_required = 30,
             enabled = false,
             hidden = true,
             category = "coins",
@@ -66,7 +66,7 @@ data:extend(
             allow_decomposition = false,
             ingredients = {
                 {"iron-chest", 10},
-                {"wills_spaceship_repair-wooden_coin_chest", 25}
+                {"wills_spaceship_repair-wooden_coin_chest", 10}
             },
             result = "wills_spaceship_repair-iron_coin_chest",
             requester_paste_multiplier = 1
@@ -92,7 +92,7 @@ data:extend(
             allow_decomposition = false,
             ingredients = {
                 {"steel-chest", 10},
-                {"wills_spaceship_repair-iron_coin_chest", 20}
+                {"wills_spaceship_repair-iron_coin_chest", 10}
             },
             result = "wills_spaceship_repair-steel_coin_chest",
             requester_paste_multiplier = 1

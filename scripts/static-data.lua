@@ -151,11 +151,11 @@ StaticData.Financials.coinCapsules = {
     },
     ["wills_spaceship_repair-iron_coin_chest_delivery_capsule"] = {
         name = "wills_spaceship_repair-iron_coin_chest_delivery_capsule",
-        value = 25000
+        value = 10000
     },
     ["wills_spaceship_repair-steel_coin_chest_delivery_capsule"] = {
         name = "wills_spaceship_repair-steel_coin_chest_delivery_capsule",
-        value = 500000
+        value = 100000
     }
 }
 

@@ -239,9 +239,9 @@ end
 function Map.MakeEntityAtPosition(region, position, entryType)
     local entryName = entryType.entryName
     local regionEntry = region[entryName]
-    local siloPrototype = game.entity_prototypes[regionEntry.prototypeName]
-    local siloFootprint = Utils.ApplyBoundingBoxToPosition(position, siloPrototype.collision_box)
-    Utils.KillAllObjectsInArea(global.surface, siloFootprint)
+    local entityPrototype = game.entity_prototypes[regionEntry.prototypeName]
+    local entityFootprint = Utils.ApplyBoundingBoxToPosition(position, entityPrototype.collision_box)
+    Utils.KillAllObjectsInArea(global.surface, entityFootprint)
 
     local entity = global.surface.create_entity {name = regionEntry.prototypeName, position = position, force = "player"}
     if entity == nil then

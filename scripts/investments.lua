@@ -184,7 +184,6 @@ end
 function Investments.DeleteInvestment(investmentIndex)
     global.Investments.investmentsTable[investmentIndex] = nil
     Investments.RecalculateTotals()
-    Interfaces.Call("Financials.UpdateBankruptcyLimit")
 end
 
 function Investments.PayInvestors(amount)
@@ -287,6 +286,7 @@ function Investments.RecalculateTotals()
     end
     global.Investments.investorsPaid = investorsPaid
     global.Investments.investorsTotal = investorsTotal
+    Interfaces.Call("Financials.UpdateBankruptcyLimit")
 end
 
 function Investments.GetGuiList()

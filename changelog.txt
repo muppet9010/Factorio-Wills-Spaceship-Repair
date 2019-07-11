@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 17.0.1
+Date: 2019-07-XXXXX
+  Features:
+    - Add Investment Delete command. It updates all totals when ran.
+  Changes:
+  Bugfixes:
+    - Fix issue with Investments being wiped on mod upgrade.
+  Info:
+---------------------------------------------------------------------------------------------------
 Version: 17.0.0
 Date: 2019-07-10
   Features:

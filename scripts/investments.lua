@@ -26,8 +26,8 @@ local Interfaces = require("utility/interfaces")
 local hourTicks = 60 * 60 * 60
 
 function Investments.CreateGlobals()
-    global.Investments = {}
-    global.Investments.investmentsTable = {}
+    global.Investments = global.Investments or {}
+    global.Investments.investmentsTable = global.Investments.investmentsTable or {}
     global.Investments.dividendsmultiplier = global.Investments.dividendsmultiplier or 0
     global.Investments.cashmultiplier = global.Investments.cashmultiplier or 0
     global.Investments.maturityTicks = global.Investments.maturityTicks or 0
@@ -44,6 +44,7 @@ end
 
 function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-add_investment", {"api-description.wills_spaceship_repair-add_investment"}, Investments.AddInvestmentCommand, true)
+    Commands.Register("wills_spaceship_repair-delete_investment", {"api-description.wills_spaceship_repair-delete_investment"}, Investments.DeleteInvestmentCommand, true)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Investments", Investments.UpdateSetting)
     EventScheduler.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
@@ -158,6 +159,32 @@ function Investments.AddInvestment(investorName, investorAmount, maturityDelay)
     global.Investments.investorsTotal = global.Investments.investorsTotal + dividend
     EventScheduler.ScheduleEvent(maturityTick, "Investments.AddInterest", investmentIndex)
     return investment
+end
+
+function Investments.DeleteInvestmentCommand(command)
+    local args = Commands.GetArgumentsFromCommand(command.parameter)
+    local investmentIndex = args[1]
+    if investmentIndex == nil or investmentIndex == "" then
+        game.print("ERROR: Investor index can not be blank in Delete Investor command arguments: " .. command.parameter)
+        return
+    end
+    investmentIndex = tonumber(investmentIndex)
+    if investmentIndex == nil or math.floor(investmentIndex) ~= investmentIndex then
+        game.print("ERROR: Investor index must be a whole number for Delete Investor command arguments: " .. command.parameter)
+        return
+    end
+    if args[2] ~= nil then
+        game.print("ERROR: Too many arguments to command Delete Investor: " .. command.parameter)
+        return
+    end
+
+    Investments.DeleteInvestment(investmentIndex)
+end
+
+function Investments.DeleteInvestment(investmentIndex)
+    global.Investments.investmentsTable[investmentIndex] = nil
+    Investments.RecalculateTotals()
+    Interfaces.Call("Financials.UpdateBankruptcyLimit")
 end
 
 function Investments.PayInvestors(amount)

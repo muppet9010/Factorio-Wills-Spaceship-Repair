@@ -31,7 +31,7 @@ Map.coinMachineChance = {
 local debugLogging = false
 
 function Map.CreateGlobals()
-    global.Map = global.map or {}
+    global.Map = global.Map or {}
     global.Map.regions = global.Map.regions or {}
 end
 

@@ -1,9 +1,11 @@
 local Constants = require("constants")
+local Utils = require("utility/utils")
 
 local coin = data.raw["item"]["coin"]
 coin.stack_size = 100
 coin.subgroup = "wills_spaceship_repair"
 coin.order = "z"
+table.remove(coin.flags, Utils.GetTableKeyWithValue(coin, "hidden"))
 
 local rocketSiloTech = data.raw["technology"]["rocket-silo"]
 table.insert(rocketSiloTech.effects, {type = "unlock-recipe", recipe = "wills_spaceship_repair-empty_coin_delivery_capsule"})
@@ -24,7 +26,6 @@ data:extend(
             name = "wills_spaceship_repair-wooden_coin_chest",
             icon = Constants.AssetModName .. "/graphics/icons/wooden_coin_chest.png",
             icon_size = 32,
-            flags = {"hidden"},
             subgroup = "wills_spaceship_repair",
             order = "z",
             stack_size = 1
@@ -50,7 +51,6 @@ data:extend(
             name = "wills_spaceship_repair-iron_coin_chest",
             icon = Constants.AssetModName .. "/graphics/icons/iron_coin_chest.png",
             icon_size = 32,
-            flags = {"hidden"},
             subgroup = "wills_spaceship_repair",
             order = "z",
             stack_size = 1
@@ -76,7 +76,6 @@ data:extend(
             name = "wills_spaceship_repair-steel_coin_chest",
             icon = Constants.AssetModName .. "/graphics/icons/steel_coin_chest.png",
             icon_size = 32,
-            flags = {"hidden"},
             subgroup = "wills_spaceship_repair",
             order = "z",
             stack_size = 1

@@ -4,6 +4,7 @@ Date: 2019-07-11
   Features:
     - Add Investment Delete command. It updates all totals when ran.
   Changes:
+    - Coins and coin chests are now selectable in filters.
   Bugfixes:
     - Fix issue with Investments being wiped on mod upgrade.
     - Fix issue with Investment Dividend Multiplyer setting being changed not recalculating Overdraft limit

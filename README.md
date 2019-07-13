@@ -37,3 +37,12 @@ Usage & Testing Notes
 The mod may not test correctly with Creative Mode and this mod isn't supported.
 Don't use with an island map.
 Must be used with a new game, won't add to an existing save.
+
+
+
+Other Mods Settings
+--------
+The Rocket Silo Construction mod must have the below mod settings configured. Otherwise the specially placed rocket silos can be moved around the map after construction has begun:
+
+ - Once built, make Rocket-Silo non-removable = true (ticked)
+ - Make the building stages non-removable = true (ticked)

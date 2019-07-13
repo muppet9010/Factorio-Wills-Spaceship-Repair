@@ -32,7 +32,7 @@ function Market.CreateMarketEntity()
         Logging.Log("ERROR: No valid position for market at spawn found")
         return nil
     end
-    local entity = global.surface.create_entity {name = "market", position = pos, force = "player"}
+    local entity = global.surface.create_entity {name = "market", position = pos, force = "player", raise_built = true}
     if entity == nil then
         Logging.Log("ERROR: Market at spawn failed to create at valid position")
         return nil
@@ -51,7 +51,7 @@ function Market.CreateCoinBoxEntity()
         Logging.Log("ERROR: No valid position for Coin Box at spawn found")
         return nil
     end
-    local entity = global.surface.create_entity {name = "logistic-chest-passive-provider", position = pos, force = "player"}
+    local entity = global.surface.create_entity {name = "logistic-chest-passive-provider", position = pos, force = "player", raise_built = true}
     if entity == nil then
         Logging.Log("ERROR: Coin Box at spawn failed to create at valid position")
         return nil

@@ -28,6 +28,7 @@ function Financials.OnLoad()
     Events.RegisterHandler(defines.events.on_rocket_launched, "Financials", Financials.OnRocketLaunched)
     EventScheduler.RegisterScheduledEventType("Financials.AddWages", Financials.AddWages)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Financials", Financials.UpdateSetting)
+    Interfaces.RegisterInterface("Financials.UpdateBankruptcyLimit", Financials.UpdateBankruptcyLimit)
 end
 
 function Financials.UpdateSetting(event)

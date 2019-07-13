@@ -53,8 +53,9 @@ end
 
 local function OnStartup()
     CreateGlobals()
-    UpdateSetting(nil)
+    OnLoad()
 
+    UpdateSetting(nil)
     Utils.DisableIntroMessage()
     Utils.DisableWinOnRocket()
     Investments.OnStartup()
@@ -63,8 +64,6 @@ local function OnStartup()
     Market.OnStartup()
     Map.OnStartup()
     Gui.OnStartup()
-
-    OnLoad()
 end
 
 script.on_init(OnStartup)

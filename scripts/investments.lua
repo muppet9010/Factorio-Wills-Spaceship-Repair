@@ -26,8 +26,8 @@ local Interfaces = require("utility/interfaces")
 local hourTicks = 60 * 60 * 60
 
 function Investments.CreateGlobals()
-    global.Investments = {}
-    global.Investments.investmentsTable = {}
+    global.Investments = global.Investments or {}
+    global.Investments.investmentsTable = global.Investments.investmentsTable or {}
     global.Investments.dividendsmultiplier = global.Investments.dividendsmultiplier or 0
     global.Investments.cashmultiplier = global.Investments.cashmultiplier or 0
     global.Investments.maturityTicks = global.Investments.maturityTicks or 0
@@ -36,6 +36,7 @@ function Investments.CreateGlobals()
     global.Investments.investorsTotal = global.Investments.investorsTotal or 0
     global.Investments.deliveryPodSizeCoinMinimums = global.Investments.deliveryPodSizeCoinMinimums or {}
     global.Investments.deliveryPodModularPartCost = global.Investments.deliveryPodModularPartCost or 1
+    global.Investments.investmentsGuiCondensingTicks = global.Investments.investmentsGuiCondensingTicks or 0
 end
 
 function Investments.OnStartup()
@@ -44,6 +45,7 @@ end
 
 function Investments.OnLoad()
     Commands.Register("wills_spaceship_repair-add_investment", {"api-description.wills_spaceship_repair-add_investment"}, Investments.AddInvestmentCommand, true)
+    Commands.Register("wills_spaceship_repair-delete_investment", {"api-description.wills_spaceship_repair-delete_investment"}, Investments.DeleteInvestmentCommand, true)
     Events.RegisterHandler(defines.events.on_runtime_mod_setting_changed, "Investments", Investments.UpdateSetting)
     EventScheduler.RegisterScheduledEventType("Investments.AddInterest", Investments.AddInterest)
     Commands.Register("wills_spaceship_repair-write_investment_data", {"api-description.wills_spaceship_repair-write_investment_data"}, Investments.WriteOutTableCommand, false)
@@ -77,27 +79,30 @@ function Investments.UpdateSetting(event)
     if settingName == "wills_spaceship_repair-item_delivery_pod_size_cash_values" or settingName == nil then
         Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(settings.global["wills_spaceship_repair-item_delivery_pod_size_cash_values"].value)
     end
+    if settingName == "wills_spaceship_repair-investment_gui_condensing_minutes" or settingName == nil then
+        global.Investments.investmentsGuiCondensingTicks = tonumber(settings.global["wills_spaceship_repair-investment_gui_condensing_minutes"].value) * 60 * 60
+    end
 end
 
 function Investments.AddInvestmentCommand(command)
     local args = Commands.GetArgumentsFromCommand(command.parameter)
     local investorName = args[1]
     if investorName == nil or investorName == "" then
-        game.print("ERROR: Investor name can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_blank_investor_name", command.parameter})
         return
     end
     local investorAmount = args[2]
     if investorAmount == nil or investorAmount == "" then
-        game.print("ERROR: Investor amount can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_blank_investor_amount", command.parameter})
         return
     end
     investorAmount = tonumber(investorAmount)
     if investorAmount == nil or math.floor(investorAmount) ~= investorAmount then
-        game.print("ERROR: Investor amount must be a whole number for Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_non_number_investor_amount", command.parameter})
         return
     end
     if args[3] ~= nil then
-        game.print("ERROR: Too many arguments to command Add Investor: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_too_many_arguments", command.parameter})
         return
     end
 
@@ -160,6 +165,38 @@ function Investments.AddInvestment(investorName, investorAmount, maturityDelay)
     return investment
 end
 
+function Investments.DeleteInvestmentCommand(command)
+    local args = Commands.GetArgumentsFromCommand(command.parameter)
+    local investmentIndex = args[1]
+    if investmentIndex == nil or investmentIndex == "" then
+        game.print({"message.wills_spaceship_repair-investment_deleted_index_blank", command.parameter})
+        return
+    end
+    investmentIndex = tonumber(investmentIndex)
+    if investmentIndex == nil or math.floor(investmentIndex) ~= investmentIndex then
+        game.print({"message.wills_spaceship_repair-investment_deleted_index_not_valid_number", command.parameter})
+        return
+    end
+    if args[2] ~= nil then
+        game.print({"message.wills_spaceship_repair-investment_deleted_too_many_arguments", command.parameter})
+        return
+    end
+
+    local investment = global.Investments.investmentsTable[investmentIndex]
+    if investment ~= nil then
+        game.print({"message.wills_spaceship_repair-investment_deleted_success", investmentIndex, investment.investorName, investment.investmentAmount})
+        Investments.DeleteInvestment(investmentIndex)
+    else
+        game.print({"mesasge.wills_spaceship_repair-investment_deleted_index_not_found", investmentIndex})
+    end
+end
+
+function Investments.DeleteInvestment(investmentIndex)
+    global.Investments.investmentsTable[investmentIndex] = nil
+    EventScheduler.RemoveScheduledEvents("Investments.AddInterest", investmentIndex)
+    Investments.RecalculateTotals()
+end
+
 function Investments.PayInvestors(amount)
     local tick = game.tick
     local outstandingInvestments = {}
@@ -201,7 +238,7 @@ function Investments.AddInterest(event)
     local tick = event.tick
     local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
-    if investment.owed <= 0 then
+    if investment == nil or investment.owed <= 0 then
         return
     end
     local interest = math.floor(investment.owed * global.Investments.hourlyInterestRate)
@@ -260,35 +297,61 @@ function Investments.RecalculateTotals()
     end
     global.Investments.investorsPaid = investorsPaid
     global.Investments.investorsTotal = investorsTotal
+    Interfaces.Call("Financials.UpdateBankruptcyLimit")
 end
 
 function Investments.GetGuiList()
     local owedInvestments, paidInvestments = {}, {}
     for _, investment in pairs(global.Investments.investmentsTable) do
         if investment.owed > 0 then
-            table.insert(owedInvestments, investment)
+            table.insert(owedInvestments, Utils.DeepCopy(investment))
         else
-            table.insert(paidInvestments, investment)
+            table.insert(paidInvestments, Utils.DeepCopy(investment))
         end
+    end
+    if global.Investments.investmentsGuiCondensingTicks > 0 then
+        Investments.CondenseInvestmentsList(owedInvestments)
+        Investments.CondenseInvestmentsList(paidInvestments)
     end
     table.sort(owedInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     table.sort(paidInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     return owedInvestments, paidInvestments
 end
 
+function Investments.CondenseInvestmentsList(investmentList)
+    local lastUserInvestment = {}
+    local count = 1
+    while count <= #investmentList do
+        local investment = investmentList[count]
+        local playersPrevious = lastUserInvestment[investment.investorName]
+        if playersPrevious ~= nil and investment.investmentTick <= playersPrevious.investmentTick + global.Investments.investmentsGuiCondensingTicks then
+            playersPrevious.investmentAmount = playersPrevious.investmentAmount + investment.investmentAmount
+            playersPrevious.dividend = playersPrevious.dividend + investment.dividend
+            playersPrevious.interestAcquired = playersPrevious.interestAcquired + investment.interestAcquired
+            playersPrevious.paid = playersPrevious.paid + investment.paid
+            playersPrevious.owed = playersPrevious.owed + investment.owed
+            playersPrevious.condensedCount = (playersPrevious.condensedCount or 1) + 1
+            table.remove(investmentList, count)
+        else
+            lastUserInvestment[investment.investorName] = investment
+            count = count + 1
+        end
+    end
+end
+
 function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPodSizeCoinMinimumsString)
     local deliveryPodSizeCoinMinimums = game.json_to_table(deliveryPodSizeCoinMinimumsString)
     global.Investments.deliveryPodSizeCoinMinimums = {}
     if deliveryPodSizeCoinMinimums == nil then
-        game.print("ERROR: Invalid table given for setting: Item delivery pod size cash values")
+        game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_table"})
         return
     end
-    for _, details in pairs(deliveryPodSizeCoinMinimums) do
+    for i, details in pairs(deliveryPodSizeCoinMinimums) do
         if details.shipSize == nil or type(details.shipSize) ~= "string" then
-            game.print("ERROR: setting Item delivery pod size cash values missing/invalid shipSize")
+            game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_ship_size", i})
             return
         elseif details.coinCost == nil or type(details.coinCost) ~= "number" then
-            game.print("ERROR: setting Item delivery pod size cash values missing/invalid coinCost")
+            game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_coin_cost", i})
             return
         end
 
@@ -296,7 +359,7 @@ function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPod
             global.Investments.deliveryPodModularPartCost = details.coinCost
         else
             if details.radius == nil or type(details.radius) ~= "number" then
-                game.print("ERROR: setting Item delivery pod size cash values missing/invalid radius")
+                game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_radius", i})
                 return
             end
             table.insert(global.Investments.deliveryPodSizeCoinMinimums, {coinCost = details.coinCost, shipSize = details.shipSize, radius = details.radius})

@@ -61,7 +61,7 @@ function Map.CreateSpawnCoin3MachineEntity()
         Logging.Log("ERROR: No valid coin machine at spawn position found")
         return nil
     end
-    local entity = global.surface.create_entity {name = "wills_spaceship_repair-steel_coin_chest_assembling_machine", position = pos, force = "player"}
+    local entity = global.surface.create_entity {name = "wills_spaceship_repair-steel_coin_chest_assembling_machine", position = pos, force = "player", raise_built = true}
     if entity == nil then
         Logging.Log("ERROR: Coin machine at spawn failed to create at valid position")
         return nil
@@ -243,7 +243,7 @@ function Map.MakeEntityAtPosition(region, position, entryType)
     local entityFootprint = Utils.ApplyBoundingBoxToPosition(position, entityPrototype.collision_box)
     Utils.DestroyAllObjectsInArea(global.surface, entityFootprint)
 
-    local entity = global.surface.create_entity {name = regionEntry.prototypeName, position = position, force = "player"}
+    local entity = global.surface.create_entity {name = regionEntry.prototypeName, position = position, force = "player", raise_built = true}
     if entity == nil then
         Logging.LogPrint("ERROR: Failed to place '" .. entryName .. "' in a valid position for region: " .. region.index)
         return

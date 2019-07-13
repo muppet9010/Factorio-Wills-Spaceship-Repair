@@ -84,21 +84,21 @@ function Investments.AddInvestmentCommand(command)
     local args = Commands.GetArgumentsFromCommand(command.parameter)
     local investorName = args[1]
     if investorName == nil or investorName == "" then
-        game.print("ERROR: Investor name can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_blank_investor_name", command.parameter})
         return
     end
     local investorAmount = args[2]
     if investorAmount == nil or investorAmount == "" then
-        game.print("ERROR: Investor amount can not be blank in Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_blank_investor_amount", command.parameter})
         return
     end
     investorAmount = tonumber(investorAmount)
     if investorAmount == nil or math.floor(investorAmount) ~= investorAmount then
-        game.print("ERROR: Investor amount must be a whole number for Add Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_non_number_investor_amount", command.parameter})
         return
     end
     if args[3] ~= nil then
-        game.print("ERROR: Too many arguments to command Add Investor: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_add_too_many_arguments", command.parameter})
         return
     end
 
@@ -165,24 +165,31 @@ function Investments.DeleteInvestmentCommand(command)
     local args = Commands.GetArgumentsFromCommand(command.parameter)
     local investmentIndex = args[1]
     if investmentIndex == nil or investmentIndex == "" then
-        game.print("ERROR: Investor index can not be blank in Delete Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_deleted_index_blank", command.parameter})
         return
     end
     investmentIndex = tonumber(investmentIndex)
     if investmentIndex == nil or math.floor(investmentIndex) ~= investmentIndex then
-        game.print("ERROR: Investor index must be a whole number for Delete Investor command arguments: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_deleted_index_not_valid_number", command.parameter})
         return
     end
     if args[2] ~= nil then
-        game.print("ERROR: Too many arguments to command Delete Investor: " .. command.parameter)
+        game.print({"message.wills_spaceship_repair-investment_deleted_too_many_arguments", command.parameter})
         return
     end
 
-    Investments.DeleteInvestment(investmentIndex)
+    local investment = global.Investments.investmentsTable[investmentIndex]
+    if investment ~= nil then
+        game.print({"message.wills_spaceship_repair-investment_deleted_success", investmentIndex, investment.investorName, investment.investmentAmount})
+        Investments.DeleteInvestment(investmentIndex)
+    else
+        game.print({"mesasge.wills_spaceship_repair-investment_deleted_index_not_found", investmentIndex})
+    end
 end
 
 function Investments.DeleteInvestment(investmentIndex)
     global.Investments.investmentsTable[investmentIndex] = nil
+    EventScheduler.RemoveScheduledEvents("Investments.AddInterest", investmentIndex)
     Investments.RecalculateTotals()
 end
 
@@ -227,7 +234,7 @@ function Investments.AddInterest(event)
     local tick = event.tick
     local investmentIndex = event.instanceId
     local investment = global.Investments.investmentsTable[investmentIndex]
-    if investment.owed <= 0 then
+    if investment == nil or investment.owed <= 0 then
         return
     end
     local interest = math.floor(investment.owed * global.Investments.hourlyInterestRate)
@@ -307,15 +314,15 @@ function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPod
     local deliveryPodSizeCoinMinimums = game.json_to_table(deliveryPodSizeCoinMinimumsString)
     global.Investments.deliveryPodSizeCoinMinimums = {}
     if deliveryPodSizeCoinMinimums == nil then
-        game.print("ERROR: Invalid table given for setting: Item delivery pod size cash values")
+        game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_table"})
         return
     end
-    for _, details in pairs(deliveryPodSizeCoinMinimums) do
+    for i, details in pairs(deliveryPodSizeCoinMinimums) do
         if details.shipSize == nil or type(details.shipSize) ~= "string" then
-            game.print("ERROR: setting Item delivery pod size cash values missing/invalid shipSize")
+            game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_ship_size", i})
             return
         elseif details.coinCost == nil or type(details.coinCost) ~= "number" then
-            game.print("ERROR: setting Item delivery pod size cash values missing/invalid coinCost")
+            game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_coin_cost", i})
             return
         end
 
@@ -323,7 +330,7 @@ function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPod
             global.Investments.deliveryPodModularPartCost = details.coinCost
         else
             if details.radius == nil or type(details.radius) ~= "number" then
-                game.print("ERROR: setting Item delivery pod size cash values missing/invalid radius")
+                game.print({"message.wills_spaceship_repair-delivery_pod_size_invalid_radius", i})
                 return
             end
             table.insert(global.Investments.deliveryPodSizeCoinMinimums, {coinCost = details.coinCost, shipSize = details.shipSize, radius = details.radius})

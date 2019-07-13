@@ -7,6 +7,7 @@ Date: 2019-07-11
   Bugfixes:
     - Fix issue with Investments being wiped on mod upgrade.
     - Fix issue with Investment Dividend Multiplyer setting being changed not recalculating Overdraft limit
+    - When placing player entites in the map raise the built event for other mods.
   Info:
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.0

@@ -3,6 +3,7 @@ Version: 17.0.1
 Date: 2019-07-11
   Features:
     - Add Investment Delete command. It updates all totals when ran.
+    - Add Investment GUI condensing option to reduce the clutter of many small investments in the Investment GUI screen.
   Changes:
     - Coins and coin chests are now selectable in filters.
   Bugfixes:

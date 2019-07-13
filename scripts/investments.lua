@@ -36,6 +36,7 @@ function Investments.CreateGlobals()
     global.Investments.investorsTotal = global.Investments.investorsTotal or 0
     global.Investments.deliveryPodSizeCoinMinimums = global.Investments.deliveryPodSizeCoinMinimums or {}
     global.Investments.deliveryPodModularPartCost = global.Investments.deliveryPodModularPartCost or 1
+    global.Investments.investmentsGuiCondensingTicks = global.Investments.investmentsGuiCondensingTicks or 0
 end
 
 function Investments.OnStartup()
@@ -77,6 +78,9 @@ function Investments.UpdateSetting(event)
     end
     if settingName == "wills_spaceship_repair-item_delivery_pod_size_cash_values" or settingName == nil then
         Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(settings.global["wills_spaceship_repair-item_delivery_pod_size_cash_values"].value)
+    end
+    if settingName == "wills_spaceship_repair-investment_gui_condensing_minutes" or settingName == nil then
+        global.Investments.investmentsGuiCondensingTicks = tonumber(settings.global["wills_spaceship_repair-investment_gui_condensing_minutes"].value) * 60 * 60
     end
 end
 
@@ -300,14 +304,39 @@ function Investments.GetGuiList()
     local owedInvestments, paidInvestments = {}, {}
     for _, investment in pairs(global.Investments.investmentsTable) do
         if investment.owed > 0 then
-            table.insert(owedInvestments, investment)
+            table.insert(owedInvestments, Utils.DeepCopy(investment))
         else
-            table.insert(paidInvestments, investment)
+            table.insert(paidInvestments, Utils.DeepCopy(investment))
         end
+    end
+    if global.Investments.investmentsGuiCondensingTicks > 0 then
+        Investments.CondenseInvestmentsList(owedInvestments)
+        Investments.CondenseInvestmentsList(paidInvestments)
     end
     table.sort(owedInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     table.sort(paidInvestments, Investments.InvestorsIndexSortedByMaturityTime)
     return owedInvestments, paidInvestments
+end
+
+function Investments.CondenseInvestmentsList(investmentList)
+    local lastUserInvestment = {}
+    local count = 1
+    while count <= #investmentList do
+        local investment = investmentList[count]
+        local playersPrevious = lastUserInvestment[investment.investorName]
+        if playersPrevious ~= nil and investment.investmentTick <= playersPrevious.investmentTick + global.Investments.investmentsGuiCondensingTicks then
+            playersPrevious.investmentAmount = playersPrevious.investmentAmount + investment.investmentAmount
+            playersPrevious.dividend = playersPrevious.dividend + investment.dividend
+            playersPrevious.interestAcquired = playersPrevious.interestAcquired + investment.interestAcquired
+            playersPrevious.paid = playersPrevious.paid + investment.paid
+            playersPrevious.owed = playersPrevious.owed + investment.owed
+            playersPrevious.condensedCount = (playersPrevious.condensedCount or 1) + 1
+            table.remove(investmentList, count)
+        else
+            lastUserInvestment[investment.investorName] = investment
+            count = count + 1
+        end
+    end
 end
 
 function Investments.HandleDeliveryPodSizeCoinMiniumumSettingChanged(deliveryPodSizeCoinMinimumsString)

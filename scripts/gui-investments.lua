@@ -90,7 +90,11 @@ function GuiInvestments.AddInvestmentToDisplayedList(investment, investmentTable
     else
         color = {r = 255, g = 0, b = 0, a = 255}
     end
-    local investorName = GuiUtil.AddElement({parent = investmentTable, name = "investments_investor_" .. investment.index, type = "label", caption = investment.investorName, style = "muppet_semibold_text"})
+    local investorNameString = investment.investorName
+    if investment.condensedCount ~= nil then
+        investorNameString = investorNameString .. " (" .. investment.condensedCount .. ")"
+    end
+    local investorName = GuiUtil.AddElement({parent = investmentTable, name = "investments_investor_" .. investment.index, type = "label", caption = investorNameString, style = "muppet_semibold_text"})
     investorName.style.font_color = color
     local investmentAmount = GuiUtil.AddElement({parent = investmentTable, name = "investments_invested_" .. investment.index, type = "label", caption = Utils.DisplayNumberPretty(investment.investmentAmount) .. " [img=item/coin]", style = "muppet_semibold_text"})
     investmentAmount.style.font_color = color

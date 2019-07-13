@@ -77,6 +77,14 @@ data:extend(
             allow_blank = true,
             setting_type = "runtime-global",
             order = "1010"
+        },
+        {
+            name = "wills_spaceship_repair-investment_gui_condensing_minutes",
+            type = "int-setting",
+            default_value = 0,
+            minimum_value = 0,
+            setting_type = "runtime-global",
+            order = "1011"
         }
     }
 )

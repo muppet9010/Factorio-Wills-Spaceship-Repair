@@ -11,6 +11,7 @@ Date: 2019-07-11
     - Fix issue with Investment Dividend Multiplyer setting being changed not recalculating Overdraft limit
     - When placing player entites in the map raise the built event for other mods.
   Info:
+    - Requires Rocket Silo Construciton mod 0.17.9 as this has a fix for mod placed rocket silo construction sites.
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.0
 Date: 2019-07-10

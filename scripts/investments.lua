@@ -200,7 +200,7 @@ end
 function Investments.PayInvestors(amount)
     local tick = game.tick
     local outstandingInvestments = {}
-    for _, investment in ipairs(global.Investments.investmentsTable) do
+    for _, investment in pairs(global.Investments.investmentsTable) do
         if investment.owed > 0 then
             table.insert(outstandingInvestments, investment)
         end

@@ -5,6 +5,7 @@ Date: 2019-07-XX
   Changes:
   Bugfixes:
     - Fix market price discrepencies
+    - Fix Investments Total recalculation from mod setting changes or version updates
   Info:
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.1

@@ -1,4 +1,5 @@
 local Utils = require("utility/utils")
+local Constants = require("constants")
 local StaticData = {}
 
 StaticData.Orders = {}
@@ -6,51 +7,51 @@ StaticData.Orders.slotStates = {
     waitingCapacityTech = {
         name = "waitingCapacityTech",
         timer = nil,
-        color = {r = 255, g = 255, b = 255, a = 255},
+        color = Constants.Colors.white,
         sortValue = 1
     },
     waitingDrydock = {
         name = "waitingDrydock",
         timer = nil,
-        color = {r = 255, g = 255, b = 255, a = 255},
+        color = Constants.Colors.white,
         sortValue = 2
     },
     waitingOrderDecryptionStart = {
         name = "waitingOrderDecryptionStart",
         timer = nil,
-        color = {r = 255, g = 255, b = 255, a = 255},
+        color = Constants.Colors.white,
         sortValue = 3
     },
     waitingOrderDecryptionEnd = {
         name = "waitingOrderDecryptionEnd",
         timer = nil,
-        color = {r = 255, g = 255, b = 255, a = 255},
+        color = Constants.Colors.white,
         sortValue = 4
     },
     waitingItem = {
         name = "waitingItem",
         timer = (60 * 60 * 60 * 6),
-        color = {r = 255, g = 255, b = 255, a = 255},
+        color = Constants.Colors.white,
         sortValue = 5
     },
     waitingCustomerDepart = {
         name = "waitingCustomerDepart",
         timer = (60 * 60 * 10),
-        color = {r = 0, g = 255, b = 0, a = 255},
+        color = Constants.Colors.white,
         sortValue = 0
     },
     orderFailed = {
         name = "orderFailed",
         timer = (60 * 60 * 5),
-        color = {r = 255, g = 0, b = 0, a = 255},
+        color = Constants.Colors.white,
         sortValue = -1
     }
 }
 StaticData.Orders.timeBonus = {
-    [(60 * 60 * 30)] = {modifierPercent = 10, guiColor = {r = 0, g = 255, b = 0, a = 255}},
-    [(60 * 60 * 60 * 2)] = {modifierPercent = 0, guiColor = {r = 255, g = 255, b = 0, a = 255}},
-    [(60 * 60 * 60 * 4)] = {modifierPercent = -10, guiColor = {r = 255, g = 130, b = 0, a = 255}},
-    [(60 * 60 * 60 * 6)] = {modifierPercent = -20, guiColor = {r = 255, g = 0, b = 0, a = 255}}
+    [(60 * 60 * 30)] = {modifierPercent = 10, guiColor = Constants.Colors.green},
+    [(60 * 60 * 60 * 2)] = {modifierPercent = 0, guiColor = Constants.Colors.yellow},
+    [(60 * 60 * 60 * 4)] = {modifierPercent = -10, guiColor = Constants.Colors.orange},
+    [(60 * 60 * 60 * 6)] = {modifierPercent = -20, guiColor = Constants.Colors.red}
 }
 StaticData.Orders.shipParts = {
     ["wills_spaceship_repair-hull_component"] = {

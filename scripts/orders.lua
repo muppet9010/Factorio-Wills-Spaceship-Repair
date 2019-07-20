@@ -239,7 +239,7 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
     end
     if longestWaitingOrder == nil then
         local localisedShipPartName = game.item_prototypes[shipPartName].localised_name
-        game.print({"message.wills_spaceship_repair-wrong_ship_part_launched", localisedShipPartName}, {r = 1, g = 0, b = 0, a = 1})
+        game.print({"message.wills_spaceship_repair-wrong_ship_part_launched", localisedShipPartName}, Constants.Colors.red)
         return
     end
 

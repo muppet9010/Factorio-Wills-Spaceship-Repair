@@ -1,6 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 17.0.2
+Date: 2019-07-XX
+  Features:
+  Changes:
+  Bugfixes:
+    - Fix market price discrepencies
+  Info:
+---------------------------------------------------------------------------------------------------
 Version: 17.0.1
-Date: 2019-07-11
+Date: 2019-07-19
   Features:
     - Add Investment Delete command. It updates all totals when ran.
     - Add Investment GUI condensing option to reduce the clutter of many small investments in the Investment GUI screen.

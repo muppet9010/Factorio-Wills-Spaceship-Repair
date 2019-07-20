@@ -109,8 +109,8 @@ end
 
 function Orders.GetOrderTimeBonus(order)
     local waitingTicks = game.tick - order.startTime
-    for delayTick, timeBonus in pairs(TimeBonus) do
-        if waitingTicks <= delayTick then
+    for maxBonusTime, timeBonus in pairs(TimeBonus) do
+        if waitingTicks < maxBonusTime then
             return timeBonus
         end
     end

@@ -10,6 +10,7 @@ local Interfaces = require("utility/interfaces")
     global.Orders.orderSlots = {
         {
             index = 1 -- Int ID of the array in the entry
+            orderId = 15 --Int count of this order across all orderSlots
             stateName = [SlotStates.name]
             item = "" -- the item name this order wants or nil
             itemCountNeeded = 3 -- the number of this item type needed or nil
@@ -23,6 +24,7 @@ local Interfaces = require("utility/interfaces")
 function Orders.CreateGlobals()
     global.Orders = global.Orders or {}
     global.Orders.orderSlots = global.Orders.orderSlots or {}
+    global.Orders.currentOrderId = global.Orders.currentOrderId or 0
 end
 
 function Orders.OnStartup()
@@ -110,7 +112,7 @@ end
 function Orders.GetOrderTimeBonus(order)
     local waitingTicks = game.tick - order.startTime
     for maxBonusTime, timeBonus in pairs(TimeBonus) do
-        if waitingTicks < maxBonusTime then
+        if waitingTicks <= maxBonusTime then
             return timeBonus
         end
     end
@@ -262,6 +264,8 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
 end
 
 function Orders.GenerateOrderInSlot(orderSlot)
+    global.Orders.currentOrderId = global.Orders.currentOrderId + 1
+    orderSlot.orderId = global.Orders.currentOrderId
     local shipPart = Utils.GetRandomEntryFromNormalisedDataSet(ShipParts, "chance")
     orderSlot.item = shipPart.name
     if shipPart.multiplePerOrder == false then

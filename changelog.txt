@@ -8,6 +8,7 @@ Date: 2019-07-XX
     - Fix market price discrepencies
     - Fix Investments Total recalculation from mod setting changes or version updates
     - Order Gui Bonus text corrected for the final minute of each bonus time period.
+    - Order Audit had duplicate entries for multi part orders.
   Info:
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.1

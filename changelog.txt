@@ -4,11 +4,13 @@ Date: 2019-07-XX
   Features:
   Changes:
     - Red text is lighter to improve readability on stream
+    - Order Audit records the number of parts launched out of the required number.
   Bugfixes:
     - Fix market price discrepencies
     - Fix Investments Total recalculation from mod setting changes or version updates
     - Order Gui Bonus text corrected for the final minute of each bonus time period.
     - Order Audit had duplicate entries for multi part orders.
+    - A cancelled and then restarted order decryption could get multiple drydocks in to the "Decrypting" state. The decryption technology would decrypt all drrdocks in the "Decrypting" state at once.
   Info:
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.1

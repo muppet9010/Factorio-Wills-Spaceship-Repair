@@ -58,6 +58,11 @@ function Orders.OnResearchStarted(event)
     local tech = event.research
     if string.find(tech.name, "wills_spaceship_repair-order_decryption-", 0, true) ~= nil then
         for _, orderSlot in pairs(global.Orders.orderSlots) do
+            if orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
+                return
+            end
+        end
+        for _, orderSlot in pairs(global.Orders.orderSlots) do
             if orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
                 Orders.SetOrderSlotState(orderSlot, SlotStates.waitingOrderDecryptionEnd.name)
                 return
@@ -132,10 +137,10 @@ function Orders.OrderDecryptionResearchCompleted()
     local decryptionAllowed = 0
     local orderDecrypted = false
     for _, orderSlot in pairs(global.Orders.orderSlots) do
-        if orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
+        if orderDecrypted == false and orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
             Orders.SetOrderSlotState(orderSlot, SlotStates.waitingItem.name)
             orderDecrypted = true
-        elseif orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
+        elseif orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name or orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
             decryptionAllowed = decryptionAllowed + 1
         end
     end

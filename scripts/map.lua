@@ -13,12 +13,14 @@ Map.entityTypeDetails = {
     silo = {
         entryName = "Silo",
         testEntryName = "TestSilo",
-        indestructable = false
+        destructable = true,
+        minable = false
     },
     coinMachine = {
         entryName = "CoinMachine",
         testEntryName = "TestCoinMachine",
-        indestructable = true
+        destructable = false,
+        minable = false
     }
 }
 Map.coinMachineChance = {
@@ -49,6 +51,9 @@ function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_entity_died, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     Events.RegisterHandler(defines.events.script_raised_destroy, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     EventScheduler.RegisterScheduledEventType("Map.ScheduledMakeSiloAtPosition", Map.ScheduledMakeSiloAtPosition)
+    local rocketSiloStageEventId = remote.call("RocketSiloCon", "get_on_silo_stage_finished")
+    Events.RegisterEvent(rocketSiloStageEventId)
+    Events.RegisterHandler(rocketSiloStageEventId, "Map", Map.OnRocketSiloEntityPlaced)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -248,9 +253,8 @@ function Map.MakeEntityAtPosition(region, position, entryType)
         Logging.LogPrint("ERROR: Failed to place '" .. entryName .. "' in a valid position for region: " .. region.index)
         return
     end
-    if entryType.indestructable then
-        entity.destructible = false
-    end
+    entity.destructible = entryType.destructable
+    entity.minable = entryType.minable
     Logging.LogPrint("region '" .. entryName .. "' created: " .. region.index, debugLogging)
     regionEntry.position = position
     if entryName == "Silo" then
@@ -274,6 +278,12 @@ function Map.OnMaybeRocketSiloDiedDestroyed(event)
         Logging.LogPrint("Rocket silo scheduled for recreation", debugLogging)
         EventScheduler.ScheduleEvent(nil, "Map.ScheduledMakeSiloAtPosition", region.index, {region = region, position = region.Silo.position})
     end
+end
+
+function Map.OnRocketSiloEntityPlaced(event)
+    local entity = event.created_entity
+    entity.destructible = Map.entityTypeDetails["silo"].destructable
+    entity.minable = Map.entityTypeDetails["silo"].minable
 end
 
 return Map

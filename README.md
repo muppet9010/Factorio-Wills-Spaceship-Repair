@@ -3,7 +3,8 @@ Will runs a spaceship repair business
 
 
 A spaceship repair business where you need to launch expensive spaceship parts to space for customer orders. Aim is to make some profit before you go bankrupt with debt. Investors (viewers) make investments giving you some cash to spend in a market to make life easier, but require a large return on their investment after many hours. Their investment accures interest after the payback period.
-Delivering spaceship parts in to space requires an available dry dock to be in space and for an order to be decrypted (researched). If the order is fulfilled witihn the time limit a time bonus/penalty payment will be made in coins to the silo. These coins can be spent in the market or processed in to coin shipment capsules and sent off via rocket to the bank. Rocket silos and coin handling machines are infrequently randomly placed across the map and can not be manually made.
+Delivering spaceship parts in to space requires an available dry dock to be in space and for an order to be decrypted (researched). If the order is fulfilled witihn the time limit a time bonus/penalty payment will be made in coins to the silo. These coins can be spent in the market or processed in to coin shipment capsules and sent off via rocket to the bank.
+Rocket silos and coin handling machines are infrequently randomly placed across the map and can not be manually made. Rocket silos are stage 1 of the Rocket Silo Construction mod and can not be mined. If destroyed they return to stage 1 and must be rebuilt. The coin machines will be randomly selected with a ratio of 3 wooden coin chest to 1 iron coin chest. A rocket silos and coin chest will be somewhere within a 2,500 tile sqaure region with the corners of the 4 starting regions at spawn (0,0).
 Supporting workforce (above first player) has to be researched and then paid an hourly wage when they are on shift.
 All high tech personal equipment must be brought through the market which is at spawn area.
 Instant cash will either appear in the passive provider chest near spawn or via delivery pod if the Item Delivery Pod mod is enabled.
@@ -37,12 +38,3 @@ Usage & Testing Notes
 The mod may not test correctly with Creative Mode and this mod isn't supported.
 Don't use with an island map.
 Must be used with a new game, won't add to an existing save.
-
-
-
-Other Mods Settings
---------
-The Rocket Silo Construction mod must have the below mod settings configured. Otherwise the specially placed rocket silos can be moved around the map after construction has begun:
-
- - Once built, make Rocket-Silo non-removable = true (ticked)
- - Make the building stages non-removable = true (ticked)

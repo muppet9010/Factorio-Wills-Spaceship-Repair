@@ -5,6 +5,7 @@ Date: 2019-07-XX
   Changes:
     - Red text is lighter to improve readability on stream
     - Order Audit records the number of parts launched out of the required number.
+    - Rocket Silo's behaviour is set via the mod and no longer requires specific Rocket Silo Construction mod settings.
   Bugfixes:
     - Fix market price discrepencies
     - Fix Investments Total recalculation from mod setting changes or version updates

@@ -117,7 +117,13 @@ function Investments.AddViewerInvestment(investorName, investorAmount)
     local coinCount = investment.instantCash
 
     if remote.interfaces["item_delivery_pod"] ~= nil and remote.interfaces["item_delivery_pod"]["call_crash_ship"] ~= nil then
-        local targetPlayer = global.primaryPlayerName
+        local targetPlayer
+        if global.primaryPlayerName ~= nil and global.primaryPlayerName ~= "" then
+            targetPlayer = global.primaryPlayerName
+        else
+            local possibleTargets = game.connected_players
+            targetPlayer = possibleTargets[math.random(#possibleTargets)].name
+        end
         local contents = {coin = coinCount}
         local radius, shipSize
         for _, shipCostEntry in pairs(global.Investments.deliveryPodSizeCoinMinimums) do

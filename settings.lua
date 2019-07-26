@@ -66,7 +66,8 @@ data:extend(
         {
             name = "wills_spaceship_repair-primary_player_name",
             type = "string-setting",
-            default_value = "YOUR NAME HERE",
+            default_value = "",
+            allow_blank = true,
             setting_type = "runtime-global",
             order = "1009"
         },

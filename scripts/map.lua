@@ -3,6 +3,7 @@ local Events = require("utility/events")
 local Utils = require("utility/utils")
 local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
+local Constants = require("constants")
 
 local desiredRegionSize = 2500
 Map.regionEdgeLengthChunks = math.floor(desiredRegionSize / 32)
@@ -35,6 +36,7 @@ local debugLogging = false
 function Map.CreateGlobals()
     global.Map = global.Map or {}
     global.Map.regions = global.Map.regions or {}
+    global.Map.playerRocketSiloTextIds = global.Map.playerRocketSiloTextIds or {}
 end
 
 function Map.OnStartup()
@@ -54,6 +56,7 @@ function Map.OnLoad()
     local rocketSiloStageEventId = remote.call("RocketSiloCon", "get_on_silo_stage_finished")
     Events.RegisterEvent(rocketSiloStageEventId)
     Events.RegisterHandler(rocketSiloStageEventId, "Map", Map.OnRocketSiloEntityPlaced)
+    Events.RegisterHandler(defines.events.on_selected_entity_changed, "Map", Map.OnPlayerSelectedEntityChanged)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -266,9 +269,13 @@ function Map.ScheduledMakeSiloAtPosition(event)
     Map.MakeEntityAtPosition(event.data.region, event.data.position, Map.entityTypeDetails["silo"])
 end
 
+function Map.IsNameARocketSilo(name)
+    return name == "rocket-silo" or string.find(name, "rsc-silo-stage", 0, true)
+end
+
 function Map.OnMaybeRocketSiloDiedDestroyed(event)
     local entity = event.entity
-    if entity.name ~= "rocket-silo" and not string.find(entity.name, "rsc-silo-stage", 0, true) then
+    if not Map.IsNameARocketSilo(name) then
         return
     end
     local pos = entity.position
@@ -284,6 +291,58 @@ function Map.OnRocketSiloEntityPlaced(event)
     local entity = event.created_entity
     entity.destructible = Map.entityTypeDetails["silo"].destructable
     entity.minable = Map.entityTypeDetails["silo"].minable
+end
+
+function Map.OnPlayerSelectedEntityChanged(event)
+    local player = game.get_player(event.player_index)
+    local siloEntity = player.selected
+    if siloEntity == nil or not Map.IsNameARocketSilo(siloEntity.name) then
+        local rocketSiloTextIds = global.Map.playerRocketSiloTextIds[player.index]
+        if rocketSiloTextIds ~= nil then
+            for _, textId in ipairs(rocketSiloTextIds) do
+                rendering.destroy(textId)
+            end
+        end
+    else
+        Map.PlayerSelectedRocketSilo(player, siloEntity)
+    end
+end
+
+function Map.PlayerSelectedRocketSilo(player, siloEntity)
+    global.Map.playerRocketSiloTextIds[player.index] = {}
+    local playerRocketSiloTextIds = global.Map.playerRocketSiloTextIds[player.index]
+    local GenerateRocketSiloText = function(text, yOffset)
+        return rendering.draw_text {
+            text = text,
+            target_offset = {0, yOffset},
+            surface = siloEntity.surface,
+            target = siloEntity,
+            color = Constants.Colors.white,
+            players = {player.index},
+            alignment = "center",
+            scale_with_zoom = true
+        }
+    end
+    local siloResultInventory = siloEntity.get_inventory(defines.inventory.rocket_silo_result)
+    local yOffsetStep = 1
+    if siloResultInventory.is_empty() then
+        table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"message.wills_spaceship_repair-rocket_silo_contents_empty"}, -yOffsetStep))
+    else
+        local contents = siloResultInventory.get_contents()
+        local yOffset = -((Utils.GetTableLength(contents) + 1) / 2) * yOffsetStep
+        table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"message.wills_spaceship_repair-rocket_silo_contents_list"}, yOffset))
+        yOffset = yOffset + yOffsetStep
+        for contentName, contentCount in pairs(contents) do
+            local itemName
+            if game.entity_prototypes[contentName] ~= nil then
+                itemName = {"entity-name." .. contentName}
+            else
+                itemName = {"item-name." .. contentName}
+            end
+            table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"misc.wills_spaceship_repair-triple", itemName, ": ", Utils.DisplayNumberPretty(contentCount)}, yOffset))
+            yOffset = yOffset + yOffsetStep
+        end
+    end
 end
 
 return Map

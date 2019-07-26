@@ -269,13 +269,9 @@ function Map.ScheduledMakeSiloAtPosition(event)
     Map.MakeEntityAtPosition(event.data.region, event.data.position, Map.entityTypeDetails["silo"])
 end
 
-function Map.IsNameARocketSilo(name)
-    return name == "rocket-silo" or string.find(name, "rsc-silo-stage", 0, true)
-end
-
 function Map.OnMaybeRocketSiloDiedDestroyed(event)
     local entity = event.entity
-    if not Map.IsNameARocketSilo(name) then
+    if entity.name ~= "rocket-silo" and not string.find(entity.name, "rsc-silo-stage", 0, true) then
         return
     end
     local pos = entity.position
@@ -295,16 +291,17 @@ end
 
 function Map.OnPlayerSelectedEntityChanged(event)
     local player = game.get_player(event.player_index)
-    local siloEntity = player.selected
-    if siloEntity == nil or not Map.IsNameARocketSilo(siloEntity.name) then
+    local entity = player.selected
+    if entity == nil or entity.name ~= "rocket-silo" then
         local rocketSiloTextIds = global.Map.playerRocketSiloTextIds[player.index]
         if rocketSiloTextIds ~= nil then
             for _, textId in ipairs(rocketSiloTextIds) do
                 rendering.destroy(textId)
             end
+            global.Map.playerRocketSiloTextIds[player.index] = nil
         end
     else
-        Map.PlayerSelectedRocketSilo(player, siloEntity)
+        Map.PlayerSelectedRocketSilo(player, entity)
     end
 end
 

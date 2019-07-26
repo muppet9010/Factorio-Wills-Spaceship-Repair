@@ -23,7 +23,7 @@ Commands
 Settings (Advanced)
 -------
 
-- Item delivery pod size cash values = When the optional mod Item Delivery Pod is being used the size of the delivery pod for instant cash is defined by this setting. It is a JSON table of the coinCost, shipSize, radius. The coin cost is the minimum value for the ship size. The shipSizes are, tiny, small, medium, large, modular. The radius is how close to the Primary Player the item delivery pod will randomly fall within. An extra entry for shipSize 'modular-part' is also required which controls how quickly the modular item delivery pod size grows. Default value showing data structure:
+- Item delivery pod size cash values = When the optional mod Item Delivery Pod is being used the size of the delivery pod for instant cash is defined by this setting. It is a JSON table of the coinCost, shipSize, radius. The coin cost is the minimum value for the ship size. The shipSizes are, tiny, small, medium, large, modular. The radius is how close to the targeted player the item delivery pod will randomly fall within. An extra entry for shipSize 'modular-part' is also required which controls how quickly the modular item delivery pod size grows. Default value showing data structure:
 '[ {"coinCost":0, "shipSize":"tiny", "radius":150}, {"coinCost":500, "shipSize":"small", "radius":100}, {"coinCost":1000, "shipSize":"medium", "radius":75}, {"coinCost":2500, "shipSize":"large", "radius":50}, {"coinCost":3000, "shipSize":"modular", "radius":50}, {"coinCost":500, "shipSize":"modular-part"} ]'
 
 

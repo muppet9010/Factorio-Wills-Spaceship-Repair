@@ -3,6 +3,7 @@ Version: 17.0.2
 Date: 2019-07-26
   Features:
     - Added on-hover text over the rocket silo to list the silos output (result) inventory
+    - If "Primary Player Name" setting is blank and the "Item Delivery Pod" mod is active a random online player will be targeted.
   Changes:
     - Red text is lighter to improve readability on stream
     - Order Audit records the number of parts launched out of the required number.

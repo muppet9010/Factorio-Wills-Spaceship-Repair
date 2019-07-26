@@ -3,6 +3,7 @@ local Events = require("utility/events")
 local Utils = require("utility/utils")
 local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
+local Constants = require("constants")
 
 local desiredRegionSize = 2500
 Map.regionEdgeLengthChunks = math.floor(desiredRegionSize / 32)
@@ -13,12 +14,14 @@ Map.entityTypeDetails = {
     silo = {
         entryName = "Silo",
         testEntryName = "TestSilo",
-        indestructable = false
+        destructable = true,
+        minable = false
     },
     coinMachine = {
         entryName = "CoinMachine",
         testEntryName = "TestCoinMachine",
-        indestructable = true
+        destructable = false,
+        minable = false
     }
 }
 Map.coinMachineChance = {
@@ -33,6 +36,7 @@ local debugLogging = false
 function Map.CreateGlobals()
     global.Map = global.Map or {}
     global.Map.regions = global.Map.regions or {}
+    global.Map.playerRocketSiloTextIds = global.Map.playerRocketSiloTextIds or {}
 end
 
 function Map.OnStartup()
@@ -49,6 +53,10 @@ function Map.OnLoad()
     Events.RegisterHandler(defines.events.on_entity_died, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     Events.RegisterHandler(defines.events.script_raised_destroy, "Map", Map.OnMaybeRocketSiloDiedDestroyed)
     EventScheduler.RegisterScheduledEventType("Map.ScheduledMakeSiloAtPosition", Map.ScheduledMakeSiloAtPosition)
+    local rocketSiloStageEventId = remote.call("RocketSiloCon", "get_on_silo_stage_finished")
+    Events.RegisterEvent(rocketSiloStageEventId)
+    Events.RegisterHandler(rocketSiloStageEventId, "Map", Map.OnRocketSiloEntityPlaced)
+    Events.RegisterHandler(defines.events.on_selected_entity_changed, "Map", Map.OnPlayerSelectedEntityChanged)
 end
 
 function Map.CreateSpawnCoin3MachineEntity()
@@ -248,9 +256,8 @@ function Map.MakeEntityAtPosition(region, position, entryType)
         Logging.LogPrint("ERROR: Failed to place '" .. entryName .. "' in a valid position for region: " .. region.index)
         return
     end
-    if entryType.indestructable then
-        entity.destructible = false
-    end
+    entity.destructible = entryType.destructable
+    entity.minable = entryType.minable
     Logging.LogPrint("region '" .. entryName .. "' created: " .. region.index, debugLogging)
     regionEntry.position = position
     if entryName == "Silo" then
@@ -273,6 +280,65 @@ function Map.OnMaybeRocketSiloDiedDestroyed(event)
     if region ~= nil then
         Logging.LogPrint("Rocket silo scheduled for recreation", debugLogging)
         EventScheduler.ScheduleEvent(nil, "Map.ScheduledMakeSiloAtPosition", region.index, {region = region, position = region.Silo.position})
+    end
+end
+
+function Map.OnRocketSiloEntityPlaced(event)
+    local entity = event.created_entity
+    entity.destructible = Map.entityTypeDetails["silo"].destructable
+    entity.minable = Map.entityTypeDetails["silo"].minable
+end
+
+function Map.OnPlayerSelectedEntityChanged(event)
+    local player = game.get_player(event.player_index)
+    local entity = player.selected
+    if entity == nil or entity.name ~= "rocket-silo" then
+        local rocketSiloTextIds = global.Map.playerRocketSiloTextIds[player.index]
+        if rocketSiloTextIds ~= nil then
+            for _, textId in ipairs(rocketSiloTextIds) do
+                rendering.destroy(textId)
+            end
+            global.Map.playerRocketSiloTextIds[player.index] = nil
+        end
+    else
+        Map.PlayerSelectedRocketSilo(player, entity)
+    end
+end
+
+function Map.PlayerSelectedRocketSilo(player, siloEntity)
+    global.Map.playerRocketSiloTextIds[player.index] = {}
+    local playerRocketSiloTextIds = global.Map.playerRocketSiloTextIds[player.index]
+    local GenerateRocketSiloText = function(text, yOffset)
+        return rendering.draw_text {
+            text = text,
+            target_offset = {0, yOffset},
+            surface = siloEntity.surface,
+            target = siloEntity,
+            color = Constants.Colors.white,
+            players = {player.index},
+            alignment = "center",
+            scale_with_zoom = true
+        }
+    end
+    local siloResultInventory = siloEntity.get_inventory(defines.inventory.rocket_silo_result)
+    local yOffsetStep = 1
+    if siloResultInventory.is_empty() then
+        table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"message.wills_spaceship_repair-rocket_silo_contents_empty"}, -yOffsetStep))
+    else
+        local contents = siloResultInventory.get_contents()
+        local yOffset = -((Utils.GetTableLength(contents) + 1) / 2) * yOffsetStep
+        table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"message.wills_spaceship_repair-rocket_silo_contents_list"}, yOffset))
+        yOffset = yOffset + yOffsetStep
+        for contentName, contentCount in pairs(contents) do
+            local itemName
+            if game.entity_prototypes[contentName] ~= nil then
+                itemName = {"entity-name." .. contentName}
+            else
+                itemName = {"item-name." .. contentName}
+            end
+            table.insert(playerRocketSiloTextIds, GenerateRocketSiloText({"misc.wills_spaceship_repair-triple", itemName, ": ", Utils.DisplayNumberPretty(contentCount)}, yOffset))
+            yOffset = yOffset + yOffsetStep
+        end
     end
 end
 

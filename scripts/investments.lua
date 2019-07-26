@@ -293,7 +293,7 @@ function Investments.RecalculateTotals()
     local investorsPaid, investorsTotal = 0, 0
     for _, investment in pairs(global.Investments.investmentsTable) do
         investorsPaid = investorsPaid + investment.paid
-        investorsTotal = investorsTotal + investment.owed
+        investorsTotal = investorsTotal + investment.dividend + investment.interestAcquired
     end
     global.Investments.investorsPaid = investorsPaid
     global.Investments.investorsTotal = investorsTotal

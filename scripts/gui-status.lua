@@ -4,6 +4,7 @@ local GuiUtil = require("utility/gui-util")
 local Utils = require("utility/utils")
 --local Logging = require("utility/logging")
 local EventScheduler = require("utility/event-scheduler")
+local Constants = require("constants")
 
 function GuiStatus.CreateGlobals()
     global.GuiStatus = global.GuiStatus or {}
@@ -107,22 +108,22 @@ end
 function GuiStatus.CalculateProfitStatusColor()
     if global.Financials.profitMade >= global.Financials.profitTarget then
         game.set_game_state {game_finished = true, player_won = true, can_continue = true, victorious_force = "player"}
-        return {r = 0, g = 255, b = 0, a = 255}
+        return Constants.Colors.green
     else
-        return {r = 255, g = 255, b = 255, a = 255}
+        return Constants.Colors.white
     end
 end
 
 function GuiStatus.CalculateBankruptcyStatusColor(totalDebt)
     if totalDebt < global.Financials.bankruptcyLimit * 0.8 then
-        return {r = 255, g = 255, b = 255, a = 255}
+        return Constants.Colors.white
     elseif totalDebt < global.Financials.bankruptcyLimit * 0.9 then
-        return {r = 255, g = 130, b = 0, a = 255}
+        return Constants.Colors.orange
     elseif totalDebt < global.Financials.bankruptcyLimit then
-        return {r = 255, g = 0, b = 0, a = 255}
+        return Constants.Colors.red
     else
         game.set_game_state {game_finished = true, player_won = false, can_continue = true, victorious_force = "player"}
-        return {r = 255, g = 0, b = 0, a = 255}
+        return Constants.Colors.red
     end
 end
 

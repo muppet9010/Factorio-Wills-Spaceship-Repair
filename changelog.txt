@@ -1,6 +1,22 @@
 ---------------------------------------------------------------------------------------------------
+Version: 17.0.2
+Date: 2019-07-26
+  Features:
+    - Added on-hover text over the rocket silo to list the silos output (result) inventory
+  Changes:
+    - Red text is lighter to improve readability on stream
+    - Order Audit records the number of parts launched out of the required number.
+    - Rocket Silo's behaviour is set via the mod and no longer requires specific Rocket Silo Construction mod settings.
+  Bugfixes:
+    - Fix market price discrepencies
+    - Fix Investments Total recalculation from mod setting changes or version updates
+    - Order Gui Bonus text corrected for the final minute of each bonus time period.
+    - Order Audit had duplicate entries for multi part orders.
+    - A cancelled and then restarted order decryption could get multiple drydocks in to the "Decrypting" state. The decryption technology would decrypt all drrdocks in the "Decrypting" state at once.
+  Info:
+---------------------------------------------------------------------------------------------------
 Version: 17.0.1
-Date: 2019-07-11
+Date: 2019-07-19
   Features:
     - Add Investment Delete command. It updates all totals when ran.
     - Add Investment GUI condensing option to reduce the clutter of many small investments in the Investment GUI screen.

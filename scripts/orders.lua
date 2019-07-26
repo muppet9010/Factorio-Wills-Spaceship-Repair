@@ -10,6 +10,7 @@ local Interfaces = require("utility/interfaces")
     global.Orders.orderSlots = {
         {
             index = 1 -- Int ID of the array in the entry
+            orderId = 15 --Int count of this order across all orderSlots
             stateName = [SlotStates.name]
             item = "" -- the item name this order wants or nil
             itemCountNeeded = 3 -- the number of this item type needed or nil
@@ -23,6 +24,7 @@ local Interfaces = require("utility/interfaces")
 function Orders.CreateGlobals()
     global.Orders = global.Orders or {}
     global.Orders.orderSlots = global.Orders.orderSlots or {}
+    global.Orders.currentOrderId = global.Orders.currentOrderId or 0
 end
 
 function Orders.OnStartup()
@@ -55,6 +57,11 @@ end
 function Orders.OnResearchStarted(event)
     local tech = event.research
     if string.find(tech.name, "wills_spaceship_repair-order_decryption-", 0, true) ~= nil then
+        for _, orderSlot in pairs(global.Orders.orderSlots) do
+            if orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
+                return
+            end
+        end
         for _, orderSlot in pairs(global.Orders.orderSlots) do
             if orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
                 Orders.SetOrderSlotState(orderSlot, SlotStates.waitingOrderDecryptionEnd.name)
@@ -109,8 +116,8 @@ end
 
 function Orders.GetOrderTimeBonus(order)
     local waitingTicks = game.tick - order.startTime
-    for delayTick, timeBonus in pairs(TimeBonus) do
-        if waitingTicks <= delayTick then
+    for maxBonusTime, timeBonus in pairs(TimeBonus) do
+        if waitingTicks <= maxBonusTime then
             return timeBonus
         end
     end
@@ -130,10 +137,10 @@ function Orders.OrderDecryptionResearchCompleted()
     local decryptionAllowed = 0
     local orderDecrypted = false
     for _, orderSlot in pairs(global.Orders.orderSlots) do
-        if orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
+        if orderDecrypted == false and orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name then
             Orders.SetOrderSlotState(orderSlot, SlotStates.waitingItem.name)
             orderDecrypted = true
-        elseif orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
+        elseif orderSlot.stateName == SlotStates.waitingOrderDecryptionEnd.name or orderSlot.stateName == SlotStates.waitingOrderDecryptionStart.name then
             decryptionAllowed = decryptionAllowed + 1
         end
     end
@@ -239,7 +246,7 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
     end
     if longestWaitingOrder == nil then
         local localisedShipPartName = game.item_prototypes[shipPartName].localised_name
-        game.print({"message.wills_spaceship_repair-wrong_ship_part_launched", localisedShipPartName}, {r = 1, g = 0, b = 0, a = 1})
+        game.print({"message.wills_spaceship_repair-wrong_ship_part_launched", localisedShipPartName}, Constants.Colors.red)
         return
     end
 
@@ -262,6 +269,8 @@ function Orders.ShipPartLaunched(shipPartName, siloEntity)
 end
 
 function Orders.GenerateOrderInSlot(orderSlot)
+    global.Orders.currentOrderId = global.Orders.currentOrderId + 1
+    orderSlot.orderId = global.Orders.currentOrderId
     local shipPart = Utils.GetRandomEntryFromNormalisedDataSet(ShipParts, "chance")
     orderSlot.item = shipPart.name
     if shipPart.multiplePerOrder == false then

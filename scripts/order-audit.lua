@@ -6,7 +6,6 @@ local Events = require("utility/events")
 
 function OrderAudit.CreateGlobals()
     global.Orders.orderAuditTable = global.Orders.orderAuditTable or {}
-    global.Orders.orderAuditMap = global.Orders.orderAuditMap or {}
 end
 
 function OrderAudit.OnLoad()
@@ -17,24 +16,28 @@ end
 
 function OrderAudit.LogOrder(event)
     local order = event.order
-    if order.stateName == SlotStates.waitingItem.name then
-        local auditIndex = #global.Orders.orderAuditTable + 1
-        global.Orders.orderAuditTable[auditIndex] = {
+    if order.orderId == nil then
+        return
+    end
+    if global.Orders.orderAuditTable[order.orderId] == nil then
+        global.Orders.orderAuditTable[order.orderId] = {
+            orderId = order.orderId,
             orderSlot = order.index,
-            auditIndex = auditIndex,
             item = order.item,
             itemCountNeeded = order.itemCountNeeded,
+            itemCountDone = 0,
             startTime = order.startTime,
             endedTime = "",
             stateName = order.stateName
         }
-        global.Orders.orderAuditMap[order.index] = auditIndex
+    elseif order.stateName == SlotStates.waitingItem.name then
+        local auditOrder = global.Orders.orderAuditTable[order.orderId]
+        auditOrder.itemCountDone = order.itemCountDone
     elseif order.stateName == SlotStates.orderFailed.name or order.stateName == SlotStates.waitingCustomerDepart.name then
-        local auditIndex = global.Orders.orderAuditMap[order.index]
-        local auditOrder = global.Orders.orderAuditTable[auditIndex]
+        local auditOrder = global.Orders.orderAuditTable[order.orderId]
+        auditOrder.itemCountDone = order.itemCountDone
         auditOrder.endedTime = order.startTime
         auditOrder.stateName = order.stateName
-        global.Orders.orderAuditMap[order.index] = nil
     end
 end
 

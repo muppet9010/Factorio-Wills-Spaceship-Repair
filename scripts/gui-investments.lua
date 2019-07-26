@@ -4,6 +4,7 @@ local GuiUtil = require("utility/gui-util")
 --local Logging = require("utility/logging")
 local Utils = require("utility/utils")
 local Investments = require("scripts/investments")
+local Constants = require("constants")
 
 function GuiInvestments.OnLoad()
     Events.RegisterHandler(defines.events.on_lua_shortcut, "GuiInvestments", GuiInvestments.OnLuaShortcut)
@@ -84,11 +85,11 @@ end
 function GuiInvestments.AddInvestmentToDisplayedList(investment, investmentTable)
     local color
     if investment.owed == 0 then
-        color = {r = 0, g = 255, b = 0, a = 255}
+        color = Constants.Colors.green
     elseif investment.interestAcquired == 0 then
-        color = {r = 255, g = 255, b = 0, a = 255}
+        color = Constants.Colors.yellow
     else
-        color = {r = 255, g = 0, b = 0, a = 255}
+        color = Constants.Colors.red
     end
     local investorNameString = investment.investorName
     if investment.condensedCount ~= nil then

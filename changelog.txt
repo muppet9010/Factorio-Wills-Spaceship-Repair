@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 17.0.2
-Date: 2019-07-XX
+Date: 2019-07-26
   Features:
     - Added on-hover text over the rocket silo to list the silos output (result) inventory
   Changes:

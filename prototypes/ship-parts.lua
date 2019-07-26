@@ -248,8 +248,8 @@ data:extend(
         {
             type = "item",
             name = "wills_spaceship_repair-point_defence_ammo",
-            icon = "__base__/graphics/technology/weapon-shooting-speed-2.png",
-            icon_size = 128,
+            icon = Constants.AssetModName .. "/graphics/icons/point_defence_ammo.png",
+            icon_size = 32,
             subgroup = "wills_spaceship_repair",
             stack_size = 1,
             order = "2000"
@@ -292,8 +292,8 @@ data:extend(
         {
             type = "item",
             name = "wills_spaceship_repair-main_weapon_system",
-            icon = "__base__/graphics/technology/artillery.png",
-            icon_size = 128,
+            icon = Constants.AssetModName .. "/graphics/icons/main_weapon_system.png",
+            icon_size = 32,
             subgroup = "wills_spaceship_repair",
             stack_size = 1,
             order = "2000"

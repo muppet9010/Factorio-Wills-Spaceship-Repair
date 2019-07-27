@@ -131,6 +131,7 @@ StaticData.Orders.shipParts = {
         multiplePerOrder = false
     }
 }
+local totalValue = 0
 for _, part in pairs(StaticData.Orders.shipParts) do
     local value = part.value
     if part.multiplePerOrder ~= false then
@@ -141,8 +142,13 @@ for _, part in pairs(StaticData.Orders.shipParts) do
         value = value * multiplier
     end
     part.chance = value
+	totalValue = totalValue + value
+end
+for _, part in pairs(StaticData.Orders.shipParts) do
+	part.chance = totalValue / part.chance
 end
 Utils.NormalisedChanceList(StaticData.Orders.shipParts, "chance")
+log(serpent.block(StaticData.Orders.shipParts))
 
 StaticData.Financials = {}
 StaticData.Financials.coinCapsules = {

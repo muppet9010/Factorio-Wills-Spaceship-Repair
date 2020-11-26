@@ -1,13 +1,13 @@
 {
     "name": "wills_spaceship_repair",
-    "version": "17.0.3",
+    "version": "18.0.4",
     "title": "Will's Spaceship Repair",
     "author": "Muppet9010",
     "contact": "",
     "homepage": "https://mods.factorio.com/mod/wills_spaceship_repair",
-    "factorio_version": "0.17",
+    "factorio_version": "0.18",
     "dependencies": [
-        "base >= 0.17.53",
+        "base >= 0.18",
         "Rocket-Silo-Construction >= 0.17.9",
         "?item_delivery_pod"
     ],
